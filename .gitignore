@@ -1,0 +1,22 @@
+# Secrets
+hotel-backend/hotel-backend/src/main/resources/application.properties
+.env
+
+# Java / Maven
+hotel-backend/hotel-backend/target/
+
+# Node / React
+hotel-frontend/hotel-frontend/node_modules/
+
+# Build files
+dist/
+build/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
