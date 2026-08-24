@@ -642,7 +642,7 @@ You are free to use, modify, and distribute this software, provided you include 
 ### Author
 - **Name:** Shivansh
 - **GitHub:** [@Shivansh8530](https://github.com/Shivansh8530)
-- **Email:** your_email@example.com
+- **Email:** chauhanshivansh85@gmail.com
 
 ### Get Help
 - 📖 Check the [FAQ](#faq) section
