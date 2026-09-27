@@ -1,710 +1,869 @@
-# 🏨 Hotel Reservation System
+# Hotel Reservation System
 
-> A comprehensive full-stack hotel management and reservation application built as a college project. This system enables users to browse, search, and book hotel rooms while providing administrators with tools to manage properties, reservations, and guest information.
-
-**Status:** College Project | **License:** MIT | **Last Updated:** 2026
+A full-stack hotel reservation platform built with React and Spring Boot, allowing users to browse rooms, make reservations, and leave reviews. Includes a comprehensive admin dashboard for managing users, rooms, and bookings.
 
 ---
 
-## Table of Contents
+## 📌 About the Project
 
-- [Overview](#overview)
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Project Structure](#project-structure)
-- [Getting Started](#getting-started)
-  - [Prerequisites](#prerequisites)
-  - [Installation](#installation)
-  - [Configuration](#configuration)
-  - [Running the Application](#running-the-application)
-- [API Documentation](#api-documentation)
-- [Database Schema](#database-schema)
-- [Usage Guide](#usage-guide)
-- [Screenshots](#screenshots)
-- [Project Details](#project-details)
-- [Future Enhancements](#future-enhancements)
-- [Contributing](#contributing)
-- [License](#license)
-- [Contact & Support](#contact--support)
+The **Hotel Reservation System** is a college group project that demonstrates a complete full-stack web application with modern authentication, real-time availability checking, and role-based access control. Users can:
+
+- Browse available hotel rooms
+- Search for rooms by check-in/check-out dates
+- View detailed room information with reviews
+- Create and manage reservations
+- Leave reviews for rooms
+- Reset passwords via email
+- Access a dedicated admin dashboard for managing the system
+
+The system enforces security through JWT-based authentication and Spring Security, with MongoDB for persistent data storage.
 
 ---
 
-## Overview
+## ✨ Features
 
-The **Hotel Reservation System** is a full-stack web application designed to streamline the hotel booking process. It provides an intuitive interface for customers to search and book rooms while offering administrators comprehensive management capabilities.
+### 🔐 Authentication & User Management
+- **User Registration** – Sign up with email, name, phone, and password
+- **Login/Logout** – JWT-based stateless authentication
+- **Password Recovery** – Forgot password and reset token flow
+- **Role-Based Access Control** – USER and ADMIN roles with distinct permissions
 
-### Key Highlights
-- ✨ Modern, responsive user interface
-- 🔐 Secure authentication and authorization
-- 📱 Mobile-friendly design
-- ⚡ Real-time availability checking
-- 💳 Integrated payment processing
-- 📊 Admin analytics dashboard
-- 🔍 Advanced room search and filtering
+### 🏨 Room Management
+- **Browse Rooms** – View all available rooms with details and images
+- **Search by Dates** – Filter rooms by check-in and check-out availability
+- **Room Details** – View full room information including amenities, pricing, and reviews
+- **Admin Room Management** – Create, update, and delete rooms (admin-only)
 
----
+### 📋 Reservations
+- **Create Bookings** – Make reservations for selected dates (authenticated users only)
+- **View My Bookings** – Track all personal bookings with status
+- **Cancel Bookings** – Cancel reservations (users can cancel their own, admins can cancel any)
+- **Booking Status** – Track booking states (CONFIRMED, CANCELLED, COMPLETED)
 
-## Features
+### ⭐ Reviews & Ratings
+- **Leave Reviews** – Submit ratings and comments for booked rooms (authenticated users only)
+- **View Reviews** – Read public reviews for any room
+- **Delete Reviews** – Users can delete their own, admins can delete any review
 
-### Customer Features
-- 🔑 User registration and authentication
-- 🏠 Browse available hotels and rooms
-- 🔎 Advanced search with filters (date, price, room type, amenities)
-- 🛏️ View detailed room information with images and reviews
-- 📅 Real-time availability checking
-- 🎯 Book rooms with instant confirmation
-- 💳 Secure payment processing
-- 📧 Email notifications for bookings
-- 👤 Personal profile and booking history
-- ⭐ Rate and review rooms/hotels
-- ❤️ Wishlist/favorites management
-
-### Administrator Features
-- 🏢 Hotel and room management (CRUD operations)
-- 📝 Manage room details, pricing, and availability
-- 👥 Guest management and communication
-- 📊 Reservation tracking and analytics
-- 💰 Revenue reports and insights
-- 📈 Occupancy rate monitoring
-- 🎟️ Discount and promotional code management
-- 📞 Customer support ticketing system
-- 🔧 System configuration and settings
+### 👨‍💼 Admin Dashboard
+- **User Management** – View all users and manage roles (promote/demote between USER and ADMIN)
+- **Create Admin Users** – Directly create new admin accounts
+- **Room Management** – Full CRUD operations on rooms
+- **Booking Management** – View all bookings across the system
+- **Access Control** – Role-based UI and endpoint restrictions
 
 ---
 
-## Tech Stack
+## 🛠️ Tech Stack
 
-### Frontend
-- **Framework:** React.js
-- **Styling:** CSS3, Bootstrap 5, Tailwind CSS
-- **State Management:** Redux / Context API
-- **HTTP Client:** Axios
-- **Routing:** React Router
-- **Form Validation:** React Hook Form
-- **UI Components:** Material-UI / Custom Components
-
-### Backend
-- **Runtime:** Node.js
-- **Framework:** Express.js
-- **Database:** MongoDB / SQL (depending on configuration)
-- **Authentication:** JWT (JSON Web Tokens)
-- **Authorization:** Role-based Access Control (RBAC)
-- **API:** RESTful API
-- **Payment Integration:** Stripe/Razorpay
-- **Email Service:** Nodemailer
-
-### Development Tools
-- **Version Control:** Git
-- **Package Manager:** npm / yarn
-- **Build Tools:** Webpack / Vite
-- **Code Formatter:** Prettier
-- **Linter:** ESLint
-- **Testing:** Jest, React Testing Library
-- **API Testing:** Postman / Insomnia
+| Layer | Technology | Purpose |
+|-------|-----------|---------|
+| **Frontend** | React 18 | UI library for dynamic user interfaces |
+| **Build Tool (Frontend)** | Vite 5 | Fast ES module bundler and dev server |
+| **HTTP Client** | Axios | Promise-based HTTP client with interceptors |
+| **Frontend Routing** | React Router DOM 6 | Client-side navigation and route protection |
+| **Backend Framework** | Spring Boot 3.3.4 | Java framework for REST APIs and business logic |
+| **Backend Language** | Java 21 | Backend server implementation |
+| **Build Tool (Backend)** | Maven 3 | Java project building and dependency management |
+| **Security** | Spring Security | Authentication, authorization, and CORS management |
+| **Authentication** | JWT (JJWT 0.12.6) | Stateless token-based authentication |
+| **Database** | MongoDB | NoSQL document database |
+| **Data Mapping** | Spring Data MongoDB | ORM layer for MongoDB operations |
+| **Input Validation** | Spring Validation | Server-side request validation |
+| **Code Generation** | Lombok 1.18 | Reduce boilerplate with annotations |
+| **Version Control** | Git | Source code management |
 
 ---
 
-## Project Structure
+## 🏗️ System Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Frontend (React + Vite)                  │
+│            (Runs on http://localhost:5173)                  │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │ Components: Navbar, RoomCard, ReviewSection, etc.   │   │
+│  │ Pages: Rooms, RoomDetail, Login, AdminDashboard     │   │
+│  │ Services: API calls via axios with JWT interceptor  │   │
+│  └─────────────────────────────────────────────────────┘   │
+└──────────────────────┬──────────────────────────────────────┘
+                       │
+                 HTTP / REST API
+           (Bearer Token Authorization)
+                       │
+┌──────────────────────▼──────────────────────────────────────┐
+│                Backend (Spring Boot + Maven)                │
+│            (Runs on http://localhost:8080)                  │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │ Controllers: Auth, Room, Booking, Review, Admin     │   │
+│  │ Services: Business logic layer                      │   │
+│  │ Repositories: MongoDB data access                   │   │
+│  │ Security: JWT Filter, Spring Security Config       │   │
+│  └─────────────────────────────────────────────────────┘   │
+└──────────────────────┬──────────────────────────────────────┘
+                       │
+                 MongoDB Driver
+                       │
+┌──────────────────────▼──────────────────────────────────────┐
+│           Database (MongoDB / MongoDB Atlas)                │
+│       (hotelReservationDB with collections)                 │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │ Collections: users, rooms, bookings, reviews        │   │
+│  └─────────────────────────────────────────────────────┘   │
+└───────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 📂 Project Structure
 
 ```
 Hotel-Reservation-System/
 │
-├── hotel-frontend/                 # React frontend application
-│   ├── public/
-│   ├── src/
-│   │   ├── components/            # Reusable React components
-│   │   ├── pages/                 # Page components
-│   │   ├── services/              # API service calls
-│   │   ├── redux/                 # Redux state management
-│   │   ├── hooks/                 # Custom React hooks
-│   │   ├── utils/                 # Utility functions
-│   │   ├── styles/                # Global and component styles
-│   │   ├── App.js                 # Main App component
-│   │   └── index.js               # Entry point
-│   ├── package.json
-│   └── .env.example
+├── hotel-backend/
+│   └── hotel-backend/
+│       ├── src/main/java/com/hotelreservation/
+│       │   ├── controller/              # REST API endpoints
+│       │   │   ├── AuthController.java
+│       │   │   ├── RoomController.java
+│       │   │   ├── BookingController.java
+│       │   │   ├── ReviewController.java
+│       │   │   └── AdminController.java
+│       │   ├── service/                 # Business logic
+│       │   │   ├── AuthService.java
+│       │   │   ├── RoomService.java
+│       │   │   ├── BookingService.java
+│       │   │   └── ReviewService.java
+│       │   ├── model/                   # Entity classes (MongoDB documents)
+│       │   │   ├── User.java
+│       │   │   ├── Room.java
+│       │   │   ├── Booking.java
+│       │   │   └── Review.java
+│       │   ├── repository/              # Data access layer
+│       │   │   ├── UserRepository.java
+│       │   │   ├── RoomRepository.java
+│       │   │   ├── BookingRepository.java
+│       │   │   └── ReviewRepository.java
+│       │   ├── dto/                     # Data transfer objects
+│       │   │   ├── LoginRequest.java
+│       │   │   ├── SignupRequest.java
+│       │   │   ├── BookingRequest.java
+│       │   │   ├── ReviewRequest.java
+│       │   │   └── AuthResponse.java
+│       │   ├── config/                  # Configuration classes
+│       │   │   ├── SecurityConfig.java
+│       │   │   └── AdminSeeder.java
+│       │   ├── security/                # Security utilities
+│       │   │   └── JwtAuthFilter.java
+│       │   ├── exception/               # Custom exceptions & handlers
+│       │   │   ├── ApiException.java
+│       │   │   └── GlobalExceptionHandler.java
+│       │   └── HotelReservationApplication.java  # Main entry point
+│       ├── src/main/resources/
+│       │   └── application-example.properties    # Config template
+│       ├── pom.xml                      # Maven dependencies
+│       └── README.md
 │
-├── hotel-backend/                  # Express.js backend application
-│   ├── hotel-backend/
-│   │   ├── routes/                # API routes
-│   │   ├── controllers/           # Route handlers and business logic
-│   │   ├── models/                # Database models/schemas
-│   │   ├── middleware/            # Custom middleware
-│   │   ├── services/              # Business logic services
-│   │   ├── config/                # Configuration files
-│   │   ├── utils/                 # Utility functions
-│   │   ├── validators/            # Input validation
-│   │   ├── app.js                 # Express app setup
-│   │   └── server.js              # Server entry point
-│   ├── package.json
-│   └── .env.example
+├── hotel-frontend/
+│   └── hotel-frontend/
+│       ├── src/
+│       │   ├── pages/                   # Page components
+│       │   │   ├── Rooms.jsx
+│       │   │   ├── RoomDetail.jsx
+│       │   │   ├── Login.jsx
+│       │   │   ├── Signup.jsx
+│       │   │   ├── MyBookings.jsx
+│       │   │   ├── AdminDashboard.jsx
+│       │   │   ├── ForgotPassword.jsx
+│       │   │   └── ResetPassword.jsx
+│       │   ├── components/              # Reusable components
+│       │   │   ├── Navbar.jsx
+│       │   │   ├── Footer.jsx
+│       │   │   ├── RoomCard.jsx
+│       │   │   ├── ReviewSection.jsx
+│       │   │   └── PrivateRoute.jsx     # Route guards
+│       │   ├── context/                 # React context providers
+│       │   │   ├── AuthContext.jsx      # Authentication state
+│       │   │   └── ThemeContext.jsx     # Theme state
+│       │   ├── services/
+│       │   │   └── api.js               # Axios instance and API calls
+│       │   ├── App.jsx                  # Main app component with routes
+│       │   ├── main.jsx                 # React DOM entry point
+│       │   └── index.css                # Global styles
+│       ├── index.html                   # HTML template
+│       ├── package.json                 # npm dependencies
+│       ├── vite.config.js               # Vite configuration
+│       ├── dist/                        # Build output (generated)
+│       └── README.md
 │
-├── .gitignore
-├── README.md                       # Project documentation
-└── LICENSE
-
+├── .gitignore                           # Git ignore rules
+└── README.md                            # This file
 ```
 
 ---
 
-## Getting Started
+## ⚙️ Requirements
+
+Before running the project, ensure you have the following installed:
+
+### Backend Requirements
+- **Java 21** – Required for Spring Boot 3.3.4
+- **Maven 3.6+** – For building and running the backend
+- **MongoDB** – Local instance (MongoDB Community Edition) or MongoDB Atlas account for cloud database
+
+### Frontend Requirements
+- **Node.js 18+** – JavaScript runtime
+- **npm 9+** – Node package manager (comes with Node.js)
+
+### Optional Tools
+- **Git** – For version control
+- **MongoDB Compass** – GUI for MongoDB (helpful for development)
+- **Postman** – API testing tool
+
+---
+
+## 🔍 Check Installed Versions
+
+Run these commands in your terminal to verify your setup:
+
+```bash
+# Java version (should be 21)
+java -version
+
+# Maven version (should be 3.6 or higher)
+mvn -version
+
+# Node.js version (should be 18+)
+node -v
+
+# npm version (should be 9+)
+npm -v
+
+# Git version (optional)
+git --version
+```
+
+---
+
+## 🚀 Installation & Setup
 
 ### Prerequisites
+Ensure MongoDB is running on your system. If using MongoDB locally:
 
-Before you begin, ensure you have installed:
+```bash
+# macOS (via Homebrew)
+brew services start mongodb-community
 
-- **Node.js** (v14.0.0 or higher) - [Download](https://nodejs.org/)
-- **npm** (v6.0.0 or higher) - Comes with Node.js
-- **Git** - [Download](https://git-scm.com/)
-- **MongoDB** or **SQL Database** (MongoDB recommended)
-- **Code Editor** - VS Code, WebStorm, etc.
+# Linux (Ubuntu/Debian)
+sudo systemctl start mongod
 
-### Installation
+# Windows
+# Start MongoDB from Services or run mongod.exe directly
+```
 
-#### 1. Clone the Repository
+### Step 1: Clone the Repository
 
 ```bash
 git clone https://github.com/Shivansh8530/Hotel-Reservation-System.git
 cd Hotel-Reservation-System
 ```
 
-#### 2. Install Backend Dependencies
+### Step 2: Backend Setup
+
+Navigate to the backend directory and configure MongoDB connection:
 
 ```bash
 cd hotel-backend/hotel-backend
-npm install
 ```
 
-#### 3. Install Frontend Dependencies
+Create `src/main/resources/application.properties` with the following configuration:
 
-```bash
-cd ../../hotel-frontend
-npm install
-```
-
-### Configuration
-
-#### Backend Configuration
-
-Create a `.env` file in `hotel-backend/hotel-backend/` directory:
-
-```env
+```properties
 # Server Configuration
-PORT=5000
-NODE_ENV=development
+server.port=8080
+server.servlet.context-path=/
 
-# Database Configuration
-MONGODB_URI=mongodb://localhost:27017/hotel-reservation
-# OR for SQL
-DB_HOST=localhost
-DB_USER=root
-DB_PASSWORD=your_password
-DB_NAME=hotel_reservation
+# MongoDB Configuration
+spring.data.mongodb.uri=mongodb://localhost:27017/hotelReservationDB
+# OR for MongoDB Atlas (cloud):
+# spring.data.mongodb.uri=mongodb+srv://username:password@cluster.mongodb.net/hotelReservationDB?retryWrites=true&w=majority
 
 # JWT Configuration
-JWT_SECRET=your_jwt_secret_key_here
-JWT_EXPIRE=7d
+jwt.secret=your-secret-key-here-make-it-long-and-random-at-least-32-characters
+jwt.expiration=86400000
 
-# Email Configuration
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=your_email@gmail.com
-SMTP_PASS=your_app_password
-
-# Payment Gateway (Stripe/Razorpay)
-STRIPE_API_KEY=your_stripe_key
-STRIPE_SECRET_KEY=your_stripe_secret
-
-# File Upload
-CLOUDINARY_NAME=your_cloudinary_name
-CLOUDINARY_API_KEY=your_api_key
-CLOUDINARY_API_SECRET=your_api_secret
-
-# CORS
-CORS_ORIGIN=http://localhost:3000
+# Logging
+logging.level.root=INFO
+logging.level.com.hotelreservation=DEBUG
 ```
 
-#### Frontend Configuration
+**⚠️ Important:**
+- Replace `your-secret-key-here` with a strong, random secret (at least 32 characters)
+- For MongoDB Atlas, replace `username`, `password`, and `cluster` with your credentials
+- Never commit `application.properties` to version control (it's in `.gitignore`)
 
-Create a `.env` file in `hotel-frontend/` directory:
-
-```env
-# API Configuration
-REACT_APP_API_URL=http://localhost:5000/api
-REACT_APP_API_TIMEOUT=10000
-
-# Environment
-REACT_APP_ENV=development
-
-# Payment Gateway
-REACT_APP_STRIPE_PUBLIC_KEY=your_stripe_public_key
-```
-
-### Running the Application
-
-#### Start the Backend Server
+### Step 3: Build and Run the Backend
 
 ```bash
-cd hotel-backend/hotel-backend
-npm start
+# Build the project
+mvn clean install
 
-# For development with auto-reload
+# Run the Spring Boot application
+mvn spring-boot:run
+
+# Backend will start at http://localhost:8080
+```
+
+**Expected output:**
+```
+Started HotelReservationApplication in X seconds (JVM running for Y seconds)
+```
+
+### Step 4: Frontend Setup
+
+In a new terminal, navigate to the frontend directory:
+
+```bash
+cd hotel-frontend/hotel-frontend
+
+# Install dependencies
+npm install
+```
+
+### Step 5: Frontend Configuration
+
+The frontend is pre-configured to connect to the backend at `http://localhost:8080` (see `src/services/api.js`).
+
+When deploying to production, update the `BASE_URL` in `src/services/api.js`:
+
+```javascript
+// For local development:
+const BASE_URL = 'http://localhost:8080'
+
+// For production (example):
+// const BASE_URL = 'https://hotel-backend-xxxxx.onrender.com'
+```
+
+### Step 6: Run the Frontend
+
+```bash
+# Start the Vite dev server
 npm run dev
+
+# Frontend will start at http://localhost:5173
 ```
 
-The backend server will be running on `http://localhost:5000`
-
-#### Start the Frontend Development Server
-
-In a new terminal:
-
-```bash
-cd hotel-frontend
-npm start
+**Expected output:**
+```
+  ➜  Local:   http://localhost:5173/
 ```
 
-The frontend will be accessible at `http://localhost:3000`
+### Step 7: Access the Application
+
+Open your browser and navigate to:
+```
+http://localhost:5173
+```
 
 ---
 
-## API Documentation
+## 🔐 Configuration & Environment Variables
 
-### Base URL
+### Backend Configuration
+
+The backend requires the following environment variables/configuration in `src/main/resources/application.properties`:
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `server.port` | Backend server port | `8080` |
+| `spring.data.mongodb.uri` | MongoDB connection string | `mongodb://localhost:27017/hotelReservationDB` |
+| `jwt.secret` | JWT signing secret (keep secure!) | `your-long-random-secret-key` |
+| `jwt.expiration` | JWT token expiration in milliseconds | `86400000` (24 hours) |
+
+### Frontend Configuration
+
+The frontend uses `src/services/api.js` to configure the backend URL:
+
+```javascript
+const BASE_URL = 'http://localhost:8080'  // Update for production
 ```
-http://localhost:5000/api
+
+### Security Notes
+
+- **Never commit secrets** – Use `.gitignore` to exclude `application.properties`
+- **Rotate JWT secrets** – Generate a strong secret using:
+  ```bash
+  openssl rand -base64 32
+  ```
+- **Use environment variables** – Inject secrets at deployment time, not in code
+- **MongoDB Atlas** – Use a strong password and restrict IP access
+
+---
+
+## 🔗 API Endpoints
+
+All endpoints except auth and public room/review endpoints require JWT authentication via header:
+
+```
+Authorization: Bearer <your-jwt-token>
 ```
 
 ### Authentication Endpoints
 
-#### User Registration
-```
-POST /auth/register
-Content-Type: application/json
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|----------------|
+| `POST` | `/api/auth/signup` | Register a new user account | ❌ No |
+| `POST` | `/api/auth/login` | Log in and receive JWT token | ❌ No |
+| `POST` | `/api/auth/forgot-password` | Request password reset link | ❌ No |
+| `POST` | `/api/auth/reset-password` | Reset password with token | ❌ No |
 
+**Signup Request:**
+```json
 {
   "name": "John Doe",
   "email": "john@example.com",
-  "password": "securePassword123",
-  "phone": "+91XXXXXXXXXX"
+  "password": "SecurePassword123",
+  "phone": "9876543210"
 }
 ```
 
-#### User Login
-```
-POST /auth/login
-Content-Type: application/json
-
-{
-  "email": "john@example.com",
-  "password": "securePassword123"
-}
-```
-
-#### Response
+**Login Request:**
 ```json
 {
-  "success": true,
-  "token": "eyJhbGciOiJIUzI1NiIs...",
-  "user": {
-    "id": "userId",
-    "name": "John Doe",
-    "email": "john@example.com",
-    "role": "guest"
-  }
+  "email": "john@example.com",
+  "password": "SecurePassword123"
 }
 ```
 
-### Hotel Endpoints
-
-#### Get All Hotels
-```
-GET /hotels
-Query Parameters: ?page=1&limit=10&city=Delhi&rating=4
-```
-
-#### Get Hotel Details
-```
-GET /hotels/:hotelId
-```
-
-#### Create Hotel (Admin Only)
-```
-POST /hotels
-Headers: Authorization: Bearer {token}
-Content-Type: application/json
-
+**Response:**
+```json
 {
-  "name": "Luxury Hotel",
-  "city": "Delhi",
-  "address": "123 Main St",
-  "rating": 4.5
+  "token": "eyJhbGciOiJIUzI1NiJ9...",
+  "userId": "507f1f77bcf86cd799439011",
+  "name": "John Doe",
+  "email": "john@example.com",
+  "role": "USER"
 }
 ```
 
 ### Room Endpoints
 
-#### Get Available Rooms
-```
-GET /rooms
-Query Parameters: ?checkIn=2026-01-15&checkOut=2026-01-20&guests=2
-```
+| Method | Endpoint | Description | Auth Required | Admin Only |
+|--------|----------|-------------|---|---|
+| `GET` | `/api/rooms` | Get all rooms | ❌ No | ❌ No |
+| `GET` | `/api/rooms?checkIn=2026-12-15&checkOut=2026-12-18` | Search available rooms by dates | ❌ No | ❌ No |
+| `GET` | `/api/rooms/{id}` | Get room details | ❌ No | ❌ No |
+| `POST` | `/api/rooms` | Create a new room | ✅ Yes | ✅ Yes |
+| `PUT` | `/api/rooms/{id}` | Update room details | ✅ Yes | ✅ Yes |
+| `DELETE` | `/api/rooms/{id}` | Delete a room | ✅ Yes | ✅ Yes |
 
-#### Get Room Details
-```
-GET /rooms/:roomId
-```
-
-#### Create Room (Admin Only)
-```
-POST /rooms
-Headers: Authorization: Bearer {token}
-Content-Type: application/json
-
+**Room Request Body (POST/PUT):**
+```json
 {
-  "hotelId": "hotelId",
-  "type": "Deluxe",
-  "price": 5000,
+  "roomNumber": "101",
+  "roomType": "Deluxe",
+  "pricePerNight": 2500.00,
   "capacity": 2,
-  "amenities": ["WiFi", "AC", "TV"]
+  "amenities": ["WiFi", "AC", "TV", "Mini Bar"],
+  "description": "Spacious deluxe room with city view",
+  "imageUrl": "https://example.com/image.jpg",
+  "available": true
 }
 ```
 
 ### Booking Endpoints
 
-#### Create Booking
-```
-POST /bookings
-Headers: Authorization: Bearer {token}
-Content-Type: application/json
+| Method | Endpoint | Description | Auth Required | Admin Only |
+|--------|----------|-------------|---|---|
+| `POST` | `/api/bookings` | Create a new booking | ✅ Yes | ❌ No |
+| `GET` | `/api/bookings/me` | Get my bookings | ✅ Yes | ❌ No |
+| `GET` | `/api/bookings/all` | Get all bookings | ✅ Yes | ✅ Yes |
+| `PUT` | `/api/bookings/{id}/cancel` | Cancel a booking | ✅ Yes | ❌ No* |
 
+*Users can cancel their own bookings; admins can cancel any booking.
+
+**Booking Request Body:**
+```json
 {
-  "roomId": "roomId",
-  "hotelId": "hotelId",
-  "checkInDate": "2026-01-15",
-  "checkOutDate": "2026-01-20",
-  "guests": 2,
-  "totalPrice": 25000
+  "roomId": "507f1f77bcf86cd799439011",
+  "checkIn": "2026-12-15",
+  "checkOut": "2026-12-18"
 }
 ```
 
-#### Get User Bookings
-```
-GET /bookings/user
-Headers: Authorization: Bearer {token}
-```
-
-#### Cancel Booking
-```
-DELETE /bookings/:bookingId
-Headers: Authorization: Bearer {token}
-```
-
-For complete API documentation, see [API_DOCS.md](./API_DOCS.md) (if available)
-
----
-
-## Database Schema
-
-### Users Collection
-```javascript
+**Booking Response:**
+```json
 {
-  _id: ObjectId,
-  name: String,
-  email: String (unique),
-  password: String (hashed),
-  phone: String,
-  address: String,
-  role: String (guest/admin), // Default: guest
-  profileImage: String,
-  createdAt: Date,
-  updatedAt: Date
+  "id": "507f1f77bcf86cd799439012",
+  "userId": "507f1f77bcf86cd799439011",
+  "roomId": "507f1f77bcf86cd799439010",
+  "checkIn": "2026-12-15",
+  "checkOut": "2026-12-18",
+  "totalPrice": 7500.00,
+  "status": "CONFIRMED",
+  "createdAt": "2026-09-27T10:30:00"
 }
 ```
 
-### Hotels Collection
-```javascript
+### Review Endpoints
+
+| Method | Endpoint | Description | Auth Required | Admin Only |
+|--------|----------|-------------|---|---|
+| `GET` | `/api/reviews/room/{roomId}` | Get reviews for a room | ❌ No | ❌ No |
+| `POST` | `/api/reviews` | Create a review | ✅ Yes | ❌ No |
+| `DELETE` | `/api/reviews/{id}` | Delete a review | ✅ Yes | ❌ No* |
+
+*Users can delete their own reviews; admins can delete any review.
+
+**Review Request Body:**
+```json
 {
-  _id: ObjectId,
-  name: String,
-  city: String,
-  state: String,
-  address: String,
-  latitude: Number,
-  longitude: Number,
-  description: String,
-  rating: Number (0-5),
-  images: [String],
-  amenities: [String],
-  contactPhone: String,
-  email: String,
-  adminId: ObjectId,
-  createdAt: Date,
-  updatedAt: Date
+  "roomId": "507f1f77bcf86cd799439011",
+  "rating": 5,
+  "title": "Excellent Room!",
+  "comment": "Very comfortable and clean. Highly recommend."
 }
 ```
 
-### Rooms Collection
-```javascript
+### Admin Endpoints
+
+| Method | Endpoint | Description | Auth Required | Admin Only |
+|--------|----------|-------------|---|---|
+| `GET` | `/api/admin/users` | Get all users | ✅ Yes | ✅ Yes |
+| `POST` | `/api/admin/users` | Create an admin user | ✅ Yes | ✅ Yes |
+| `PUT` | `/api/admin/users/{id}/role` | Update user role | ✅ Yes | ✅ Yes |
+
+**Create Admin User Request:**
+```json
 {
-  _id: ObjectId,
-  hotelId: ObjectId (ref: Hotels),
-  roomNumber: String,
-  type: String (Single/Double/Suite),
-  price: Number,
-  capacity: Number,
-  amenities: [String],
-  images: [String],
-  description: String,
-  isAvailable: Boolean,
-  createdAt: Date,
-  updatedAt: Date
+  "name": "Admin User",
+  "email": "admin@example.com",
+  "password": "AdminPassword123",
+  "phone": "9999999999"
 }
 ```
 
-### Bookings Collection
-```javascript
+**Update User Role Request:**
+```json
 {
-  _id: ObjectId,
-  userId: ObjectId (ref: Users),
-  roomId: ObjectId (ref: Rooms),
-  hotelId: ObjectId (ref: Hotels),
-  checkInDate: Date,
-  checkOutDate: Date,
-  numberOfGuests: Number,
-  totalPrice: Number,
-  status: String (confirmed/cancelled/completed),
-  paymentStatus: String (pending/completed/failed),
-  specialRequests: String,
-  cancellationReason: String,
-  createdAt: Date,
-  updatedAt: Date
+  "role": "ADMIN"
 }
 ```
 
 ---
 
-## Usage Guide
+## 🔐 Authentication
 
-### For Customers
+### JWT (JSON Web Token) Flow
 
-1. **Create an Account**
-   - Navigate to the registration page
-   - Fill in your details and create a password
-   - Verify your email address
+The application uses **JWT for stateless authentication**:
 
-2. **Search Hotels**
-   - Enter check-in and check-out dates
-   - Select number of guests
-   - Browse available hotels and rooms
-   - Use filters to narrow down options
+1. **Signup/Login** – User sends credentials to `/api/auth/signup` or `/api/auth/login`
+2. **Token Issued** – Backend validates credentials and returns a JWT token
+3. **Token Storage** – Frontend stores token in `localStorage` with key `"token"`
+4. **Authenticated Requests** – Frontend automatically attaches token to every request:
+   ```
+   Authorization: Bearer <token>
+   ```
+5. **Token Validation** – Backend validates token signature and expiration on every request
+6. **Token Refresh** – When token expires, user must log in again to get a new one
 
-3. **Book a Room**
-   - Click on a room to view details
-   - Add special requests if needed
-   - Proceed to checkout
-   - Complete payment
-   - Receive booking confirmation
+### Token Structure
 
-4. **Manage Bookings**
-   - Go to "My Bookings" in your profile
-   - View booking details
-   - Cancel bookings (if policy allows)
-   - Download invoices
+A JWT token consists of three parts separated by dots (`.`):
+- **Header** – Algorithm (HS256) and token type (JWT)
+- **Payload** – User ID, email, role, and expiration time
+- **Signature** – Cryptographic signature using the backend's secret
 
-### For Administrators
+Example token:
+```
+eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI1MDdmMWY3N2JjZjg2Y2Q3OTk0MzkwMTEiLCJpYXQiOjE2OTYwMDAwMDAsImV4cCI6MTY5NjA4NjQwMH0.xc0_5x8z9Q...
+```
 
-1. **Login as Admin**
-   - Use admin credentials to login
-   - Access the admin dashboard
+### Security Features
 
-2. **Manage Hotels**
-   - Add new hotels with details and images
-   - Edit hotel information
-   - Delete hotels if needed
-
-3. **Manage Rooms**
-   - Add rooms to hotels
-   - Set pricing and capacity
-   - Add amenities and images
-   - Update availability
-
-4. **Monitor Bookings**
-   - View all bookings in the system
-   - Check occupancy rates
-   - Process cancellations
-   - Generate reports
+- **Password Hashing** – Passwords are hashed using BCrypt, never stored in plain text
+- **CORS Protection** – Backend only allows requests from `http://localhost:5173` (dev) and `http://localhost:3000`
+- **Session Stateless** – No server-side sessions; all auth info is in the JWT
+- **Token Expiration** – Tokens expire after 24 hours (configurable)
+- **Role-Based Access Control** – Endpoints check user role (USER, ADMIN) before processing
 
 ---
 
-## Screenshots
+## 👨‍💼 Admin Dashboard
 
-### Landing Page
-![Hotel Reservation System - Landing Page](./screenshots/landing.png)
+The admin dashboard is accessible at `/admin` (requires admin login).
 
-### Search Results
-![Search Results](./screenshots/search-results.png)
+### Features
 
-### Room Details
-![Room Details](./screenshots/room-details.png)
+- **User Management**
+  - View all system users
+  - View user details: name, email, phone, role
+  - Promote users to ADMIN or demote to USER
+  - Create new admin accounts directly
 
-### Booking Confirmation
-![Booking Confirmation](./screenshots/booking-confirmation.png)
+- **Room Management**
+  - View all rooms
+  - Add new rooms with details, pricing, amenities, and images
+  - Edit existing room information
+  - Delete rooms from the system
 
-### Admin Dashboard
-![Admin Dashboard](./screenshots/admin-dashboard.png)
+- **Booking Management**
+  - View all bookings across all users
+  - See booking status (CONFIRMED, CANCELLED, COMPLETED)
+  - Cancel any user's booking if needed
 
----
+- **System Overview**
+  - Dashboard displays key statistics
+  - Manage users, rooms, and bookings from a single interface
 
-## Project Details
+### Accessing Admin Dashboard
 
-### Academic Information
-- **Project Type:** Full-Stack Web Application
-- **Purpose:** College Academic Project
-- **Year:** 2025-2026
-- **Duration:** Semester Project
-- **Team Size:** Individual / Group (specify if applicable)
+1. Create an admin account (see "Creating Admin Users" below)
+2. Log in with admin credentials
+3. Navigate to `/admin` from the navbar or directly: `http://localhost:5173/admin`
 
-### Learning Outcomes
-This project demonstrates proficiency in:
-- Full-stack web development (MERN/MEAN stack)
-- RESTful API design and implementation
-- Database modeling and management
-- Authentication and authorization
-- Frontend UI/UX development
-- Backend server architecture
-- Software engineering best practices
-- Version control and Git workflow
-- Responsive web design
+### Creating Admin Users
 
-### Project Requirements Met
-- ✅ User Authentication and Authorization
-- ✅ CRUD Operations for Hotels and Rooms
-- ✅ Room Booking and Reservation System
-- ✅ Payment Integration
-- ✅ Admin Dashboard
-- ✅ Data Validation and Error Handling
-- ✅ Responsive Design
-- ✅ Database Integration
+#### Method 1: Via Admin API (Recommended)
 
----
+Use the admin endpoint to create a new admin:
 
-## Future Enhancements
-
-- [ ] Advanced search with multiple filters
-- [ ] Real-time notifications using WebSockets
-- [ ] Email reminders for upcoming bookings
-- [ ] Guest reviews and ratings system
-- [ ] Loyalty program and rewards
-- [ ] Multi-currency support
-- [ ] Mobile application (React Native/Flutter)
-- [ ] AI-based room recommendations
-- [ ] Integration with Google Maps API
-- [ ] Advanced analytics and reporting
-- [ ] Two-factor authentication
-- [ ] Social login (Google, Facebook)
-- [ ] Invoice and receipt generation (PDF)
-- [ ] Automated cancellation policy
-- [ ] Room inventory management
-
----
-
-## Contributing
-
-This is a college project. Contributions, suggestions, and feedback are welcome!
-
-### To Contribute:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-### Guidelines:
-- Follow the existing code style
-- Add meaningful commit messages
-- Update documentation as needed
-- Test your changes before submitting PR
-
----
-
-## License
-
-This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
-
-### MIT License Summary
-You are free to use, modify, and distribute this software, provided you include the original license notice.
-
----
-
-## Contact & Support
-
-### Author
-- **Name:** Shivansh
-- **GitHub:** [@Shivansh8530](https://github.com/Shivansh8530)
-- **Email:** chauhanshivansh85@gmail.com
-
-### Get Help
-- 📖 Check the [FAQ](#faq) section
-- 🐛 Report bugs by opening an [Issue](https://github.com/Shivansh8530/Hotel-Reservation-System/issues)
-- 💬 Discuss features in [Discussions](https://github.com/Shivansh8530/Hotel-Reservation-System/discussions)
-- 📧 Email for other inquiries
-
-### Troubleshooting
-
-#### Port Already in Use
 ```bash
-# Kill process on port 5000
-lsof -ti:5000 | xargs kill -9
-
-# Kill process on port 3000
-lsof -ti:3000 | xargs kill -9
+curl -X POST http://localhost:8080/api/admin/users \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <admin-token>" \
+  -d '{
+    "name": "New Admin",
+    "email": "admin2@example.com",
+    "password": "AdminPassword123",
+    "phone": "8888888888"
+  }'
 ```
 
-#### Database Connection Error
-- Ensure MongoDB is running
-- Check connection string in `.env`
-- Verify database credentials
+#### Method 2: Via MongoDB Compass (Development Only)
 
-#### Module Not Found Error
+1. Open **MongoDB Compass** and connect to `localhost:27017`
+2. Navigate to `hotelReservationDB` → `users` collection
+3. Find your user and change `role` from `"USER"` to `"ADMIN"`
+4. Log in again to receive a fresh token with admin privileges
+
+---
+
+## 🧪 Testing the Application
+
+### Test User Accounts
+
+After starting the backend, create test accounts via signup:
+
 ```bash
-# Clear node_modules and reinstall
-rm -rf node_modules package-lock.json
-npm install
+# User account
+POST http://localhost:8080/api/auth/signup
+{
+  "name": "John User",
+  "email": "user@example.com",
+  "password": "Password123",
+  "phone": "9876543210"
+}
+
+# Admin account (after creating via admin API)
+{
+  "name": "Jane Admin",
+  "email": "admin@example.com",
+  "password": "AdminPassword123",
+  "phone": "9999999999"
+}
 ```
 
-#### CORS Error
-- Check `CORS_ORIGIN` in backend `.env`
-- Ensure frontend URL matches the configured origin
+### Testing Workflow
+
+1. **Sign up** → Create a new user account
+2. **Search rooms** → View all rooms or search by dates on `/rooms`
+3. **View room details** → Click a room card to see full details and reviews
+4. **Book a room** → Click "Book Now" and confirm your reservation
+5. **View bookings** → Navigate to `/my-bookings` to see your reservations
+6. **Leave a review** → Post a rating and comment on a room you booked
+7. **Admin features** → Log in as admin and navigate to `/admin` to manage rooms, bookings, and users
+
+### API Testing with Postman
+
+1. **Import the API** – Use endpoints from the [API Endpoints](#-api-endpoints) section
+2. **Authenticate** – Log in to get a JWT token
+3. **Add Authorization** – In Postman, set `Authorization` header to `Bearer <token>`
+4. **Test endpoints** – Try CRUD operations on rooms, bookings, and reviews
 
 ---
 
-## FAQ
+## 🛠️ Development Guide
 
-**Q: Can I use this project as a reference for my own project?**
-A: Yes! This project is open-source. Please provide attribution when using code or ideas.
+### Project Structure Overview
 
-**Q: How do I reset the admin password?**
-A: Please refer to the documentation or contact the project administrator.
+- **Backend** – Spring Boot microservices architecture with clear separation of concerns
+- **Frontend** – React SPA with client-side routing, context API for state management, and axios for API calls
+- **Database** – MongoDB document store with collections for users, rooms, bookings, and reviews
 
-**Q: Is this production-ready?**
-A: This is a college project and may need additional security hardening before production use.
+### Key Technologies Explained
 
-**Q: How often is this project updated?**
-A: Updates are made as needed for academic purposes and feature enhancements.
+- **Spring Boot** – Simplifies Spring application development with auto-configuration and embedded servers
+- **JWT** – Secure, stateless authentication without server-side session storage
+- **MongoDB** – Flexible, scalable NoSQL database ideal for document-based data
+- **React Router** – Client-side navigation with protected routes for authenticated users
+- **Axios Interceptors** – Automatically attach JWT to every HTTP request
+
+### Common Tasks
+
+#### Add a New API Endpoint
+
+1. Create a controller method in a `*Controller.java` class
+2. Annotate with `@GetMapping`, `@PostMapping`, `@PutMapping`, or `@DeleteMapping`
+3. Add security rules in `SecurityConfig.java` if needed
+4. Test with Postman or curl
+
+#### Add a New React Page
+
+1. Create a new component in `src/pages/`
+2. Add a route in `App.jsx` under the `<Routes>` component
+3. Link to the page from navigation components
+4. Use `PrivateRoute` wrapper if authentication is required
+
+#### Modify Database Schema
+
+1. Update the corresponding model class (e.g., `User.java`)
+2. Add new fields with getter/setter methods or Lombok annotations
+3. MongoDB will automatically handle schema evolution (no migration needed)
 
 ---
 
-## Acknowledgments
+## 📝 Building & Deployment
 
-- Thanks to all contributors and supporters
-- Special thanks to instructors and professors for guidance
-- Open-source communities for libraries and tools used
+### Build the Backend
+
+```bash
+cd hotel-backend/hotel-backend
+mvn clean package
+```
+
+This generates a JAR file in the `target/` directory.
+
+### Build the Frontend
+
+```bash
+cd hotel-frontend/hotel-frontend
+npm run build
+```
+
+This generates a production-ready build in the `dist/` directory.
+
+### Deploy Backend
+
+Deploy the JAR file to a hosting platform like:
+- **Render** – Free tier available
+- **Railway** – Easy deployment with MongoDB integration
+- **AWS EC2** – Elastic Cloud Compute
+- **Heroku** – (free tier discontinued, but alternatives exist)
+
+Update the `BASE_URL` in the frontend's `src/services/api.js` to point to your deployed backend.
+
+### Deploy Frontend
+
+Deploy the `dist/` directory to a static hosting service:
+- **Vercel** – Optimized for React and Next.js
+- **Netlify** – Simple drag-and-drop deployment
+- **GitHub Pages** – Free static hosting
+- **AWS S3 + CloudFront** – Scalable CDN-backed hosting
 
 ---
 
-**Made with ❤️ as a College Project**
+## 🐛 Troubleshooting
 
-⭐ If this project helped you, please consider giving it a star on GitHub!
+### Backend Won't Start
 
-Last Updated: August 2026
+**Problem:** `java.net.ConnectException: Connection refused`
+
+**Solution:** Ensure MongoDB is running:
+```bash
+# Check MongoDB status
+brew services list
+# Or manually start:
+brew services start mongodb-community
+```
+
+**Problem:** `Failed to auto-configure a DataSource` 
+
+**Solution:** Check your `application.properties` MongoDB URI:
+```properties
+spring.data.mongodb.uri=mongodb://localhost:27017/hotelReservationDB
+```
+
+### Frontend Can't Connect to Backend
+
+**Problem:** `Failed to connect to http://localhost:8080`
+
+**Solution:**
+1. Verify backend is running on port 8080
+2. Check CORS configuration in `SecurityConfig.java`
+3. Verify `BASE_URL` in `src/services/api.js` is correct
+4. Check browser console for exact error message
+
+### JWT Token Expired
+
+**Problem:** `401 Unauthorized` after some time
+
+**Solution:** Log out and log back in to get a fresh token.
+
+### MongoDB Connection String Error
+
+**Problem:** `Invalid MongoDB connection string`
+
+**Solution:**
+- Local: `mongodb://localhost:27017/hotelReservationDB`
+- Atlas: `mongodb+srv://username:password@cluster.mongodb.net/hotelReservationDB?retryWrites=true&w=majority`
+- Ensure password doesn't contain special characters or URL-encode them
+
+### Port Already in Use
+
+**Problem:** `Address already in use: :8080` or `:5173`
+
+**Solution:**
+```bash
+# Kill process on port 8080
+lsof -ti:8080 | xargs kill -9
+# OR change port in application.properties or vite.config.js
+```
+
+---
+
+## 📚 Additional Resources
+
+- [Spring Boot Documentation](https://spring.io/projects/spring-boot)
+- [React Documentation](https://react.dev)
+- [MongoDB Documentation](https://docs.mongodb.com)
+- [JWT Introduction](https://jwt.io)
+- [Vite Documentation](https://vitejs.dev)
+- [Axios Documentation](https://axios-http.com)
+
+---
+
+## 📄 License
+
+This project is a college group project. No specific license is currently assigned.
+
+---
+
+## 👥 Contributors
+
+- [Shivansh8530](https://github.com/Shivansh8530)
+
+---
+
+## 📧 Questions or Issues?
+
+If you encounter issues or have questions:
+1. Check the [Troubleshooting](#-troubleshooting) section
+2. Review the code comments for implementation details
+3. Check the backend console and browser DevTools for error messages
+4. Open a GitHub issue with a detailed description
+
+---
+
+**Happy coding! 🎉**
