@@ -3,8 +3,49 @@ import { useNavigate, Link } from 'react-router-dom'
 import { login } from '../services/api.js'
 import { useAuth } from '../context/AuthContext.jsx'
 
+function EyeIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  )
+}
+
+function EyeOffIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+      <line x1="1" y1="1" x2="23" y2="23" />
+    </svg>
+  )
+}
+
 export default function Login() {
   const [form, setForm] = useState({ email: '', password: '' })
+  const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const { loginUser } = useAuth()
@@ -20,31 +61,16 @@ export default function Login() {
     try {
       const res = await login(form)
       loginUser(res.data)
-      navigate('/rooms')
+      navigate('/')
     } catch (err) {
       if (err.response) {
-        setError(err.response.data?.message || err.response.data?.error || 'Login failed')
+        setError(err.response.data?.message || err.response.data?.error || 'Invalid email or password.')
       } else {
-        console.log('Login attempt completed, initializing guest session if offline.')
-        // Quick demo fallback so user can test the UI smoothly even if backend is offline
-        loginUser({
-          name: form.email.split('@')[0] || 'Guest User',
-          email: form.email,
-          role: form.email.includes('admin') ? 'ADMIN' : 'USER',
-          token: 'demo-jwt-token-12345'
-        })
-        navigate('/rooms')
+        setError('Unable to connect to the server. Please check your connection and try again.')
       }
     } finally {
       setLoading(false)
     }
-  }
-
-  const fillDemoUser = (isAdmin = false) => {
-    setForm({
-      email: isAdmin ? 'admin@stayease.com' : 'guest@stayease.com',
-      password: 'password123'
-    })
   }
 
   return (
@@ -67,7 +93,6 @@ export default function Login() {
               type="email"
               name="email"
               className="form-control"
-              placeholder="guest@stayease.com"
               value={form.email}
               onChange={handleChange}
               required
@@ -76,15 +101,25 @@ export default function Login() {
 
           <div className="form-group">
             <label>Password</label>
-            <input
-              type="password"
-              name="password"
-              className="form-control"
-              placeholder="••••••••"
-              value={form.password}
-              onChange={handleChange}
-              required
-            />
+            <div className="password-input-wrapper">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                name="password"
+                className="form-control"
+                value={form.password}
+                onChange={handleChange}
+                required
+              />
+              <button
+                type="button"
+                className="password-toggle-btn"
+                onClick={() => setShowPassword((prev) => !prev)}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                title={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+              </button>
+            </div>
             <div style={{ textAlign: 'right', marginTop: '0.5rem' }}>
               <Link to="/forgot-password" style={{ fontSize: '0.85rem', color: 'var(--primary)', textDecoration: 'none' }}>
                 Forgot Password?
@@ -96,23 +131,6 @@ export default function Login() {
             {loading ? 'Signing In...' : 'Sign In to StayEase'}
           </button>
         </form>
-
-        {/* Quick Demo Shortcuts */}
-        <div style={{ marginTop: '1.5rem', paddingTop: '1.25rem', borderTop: '1px solid var(--surface-container-high)', textAlign: 'center' }}>
-          <div style={{ fontSize: '0.78rem', color: 'var(--on-surface-variant)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.6rem' }}>
-            Demo Shortcuts
-          </div>
-          <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
-            <button
-              type="button"
-              className="btn btn-secondary btn-pill"
-              style={{ padding: '0.35rem 0.8rem', fontSize: '0.78rem' }}
-              onClick={() => fillDemoUser(false)}
-            >
-              Fill Guest User
-            </button>
-          </div>
-        </div>
 
         <p style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.9rem', color: 'var(--on-surface-variant)' }}>
           New to StayEase? <Link to="/signup" style={{ color: 'var(--primary)', fontWeight: '600' }}>Create an Account</Link>

@@ -16,9 +16,8 @@ export default function ReviewSection({ roomId }) {
     setLoading(true)
     try {
       const res = await getReviewsForRoom(roomId)
-      setReviews(res.data)
+      setReviews(res.data || [])
     } catch (err) {
-      console.log('Failed to fetch reviews, using empty list in showcase mode.')
       setReviews([])
     } finally {
       setLoading(false)
@@ -43,21 +42,7 @@ export default function ReviewSection({ roomId }) {
       setForm({ rating: 5, title: '', comment: '' })
       loadReviews()
     } catch (err) {
-      setError('Could not publish review. Try again later.')
-      console.log('Backend offline, using local state for review.')
-      const localReview = {
-        id: Date.now().toString(),
-        userId: user?.id || 'demo',
-        userName: user?.name || 'Guest',
-        roomId,
-        rating: Number(form.rating),
-        title: form.title,
-        comment: form.comment,
-        createdAt: new Date().toISOString()
-      }
-      setReviews([localReview, ...reviews])
-      setSuccess('Your review has been published (local showcase mode).')
-      setForm({ rating: 5, title: '', comment: '' })
+      setError(err.response?.data?.message || 'Could not publish review. Please try again.')
     } finally {
       setSubmitting(false)
     }
@@ -69,8 +54,7 @@ export default function ReviewSection({ roomId }) {
       await deleteReview(reviewId)
       loadReviews()
     } catch (err) {
-      console.log('Backend offline, using local state for delete.')
-      setReviews(reviews.filter(r => r.id !== reviewId))
+      alert('Failed to delete review. Please try again.')
     }
   }
 

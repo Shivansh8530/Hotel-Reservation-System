@@ -36,6 +36,11 @@ public class RoomController {
         return ResponseEntity.ok(roomService.getRoomById(id));
     }
 
+    @GetMapping("/hotel/{hotelId}")
+    public ResponseEntity<List<Room>> getRoomsByHotel(@PathVariable String hotelId) {
+        return ResponseEntity.ok(roomService.getRoomsByHotel(hotelId));
+    }
+
     // Admin-only (enforced in SecurityConfig)
     @PostMapping
     public ResponseEntity<Room> createRoom(@Valid @RequestBody RoomRequest request) {

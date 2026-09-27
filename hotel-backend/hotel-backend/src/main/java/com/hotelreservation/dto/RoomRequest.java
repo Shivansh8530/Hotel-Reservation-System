@@ -23,6 +23,7 @@ public class RoomRequest {
 
     private List<String> amenities;
     private String description;
+    private String hotelId;
     private String imageUrl;
     private boolean available = true;
 }

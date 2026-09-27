@@ -1,9 +1,7 @@
 import axios from 'axios'
 
-// The ONLY place that knows the backend URL.
-// Local dev: Spring Boot on 8080. When you deploy to Render, change this
-// one line to your deployed backend URL (e.g. https://hotel-backend-xxxx.onrender.com).
-const BASE_URL = 'http://localhost:8080'
+// Centralized API configuration: VITE_API_BASE_URL with http://localhost:8082 fallback
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8082'
 
 const api = axios.create({
   baseURL: BASE_URL,
@@ -21,6 +19,16 @@ api.interceptors.request.use((config) => {
 // --- Auth ---
 export const signup = (data) => api.post('/api/auth/signup', data)
 export const login = (data) => api.post('/api/auth/login', data)
+export const forgotPassword = (data) => api.post('/api/auth/forgot-password', data)
+export const resetPassword = (data) => api.post('/api/auth/reset-password', data)
+
+// --- Hotels (Unified Aggregator) ---
+export const getHotels = (featured = false) => api.get('/api/hotels', { params: { featured } })
+export const searchHotels = (params = {}) => api.get('/api/hotels/search', { params })
+export const getHotelById = (id) => api.get(`/api/hotels/${id}`)
+export const createHotel = (data) => api.post('/api/hotels', data)
+export const updateHotel = (id, data) => api.put(`/api/hotels/${id}`, data)
+export const deleteHotel = (id) => api.delete(`/api/hotels/${id}`)
 
 // --- Rooms ---
 export const getRooms = (checkIn, checkOut) => {
@@ -32,6 +40,7 @@ export const getRooms = (checkIn, checkOut) => {
   return api.get('/api/rooms', { params })
 }
 export const getRoom = (id) => api.get(`/api/rooms/${id}`)
+export const getRoomsByHotel = (hotelId) => api.get(`/api/rooms/hotel/${hotelId}`)
 export const createRoom = (data) => api.post('/api/rooms', data)
 export const updateRoom = (id, data) => api.put(`/api/rooms/${id}`, data)
 export const deleteRoom = (id) => api.delete(`/api/rooms/${id}`)

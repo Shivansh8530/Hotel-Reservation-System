@@ -2,6 +2,15 @@
   --font-headline: 'Playfair Display', Georgia, serif;
   --font-body: 'Inter', system-ui, -apple-system, sans-serif;
 
+  /* Standardized Type Scale (Consistent Hierarchy) */
+  --fs-xs: 0.75rem;    /* 12px - Badges, pill tags, micro-labels */
+  --fs-sm: 0.875rem;   /* 14px - Form labels, metadata, captions, sorting */
+  --fs-base: 1rem;     /* 16px - Body text, standard inputs, buttons */
+  --fs-lg: 1.125rem;   /* 18px - Card subtitles, subheadings */
+  --fs-xl: 1.35rem;    /* 21.6px - Section sub-headings */
+  --fs-2xl: 1.75rem;   /* 28px - Section titles (h2) */
+  --fs-3xl: 2.75rem;   /* 44px - Hero display (h1) */
+
   /* Color System (Light Theme Default) */
   --surface: #faf9f5;
   --surface-dim: #dbdad6;
@@ -270,10 +279,10 @@ a {
   backdrop-filter: blur(8px);
   padding: 0.35rem 1rem;
   border-radius: var(--radius-pill);
-  font-size: 0.85rem;
+  font-size: var(--fs-xs);
   font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  text-transform: none;
   margin-bottom: 1rem;
 }
 
@@ -295,19 +304,41 @@ a {
   background: var(--surface-container-lowest);
   border: 1px solid var(--outline-variant);
   border-radius: var(--radius-lg);
-  padding: 1.25rem;
+  padding: 1.25rem 1.5rem;
   box-shadow: var(--shadow-floating);
   margin-top: -3.5rem;
   position: relative;
   z-index: 10;
   margin-bottom: 3rem;
+  max-width: 1140px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .search-form {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) auto;
-  gap: 1rem;
+  grid-template-columns: minmax(180px, 2fr) minmax(130px, 1.2fr) minmax(130px, 1.2fr) minmax(105px, 1fr) minmax(105px, 1fr) auto;
+  gap: 0.85rem;
   align-items: end;
+}
+
+@media (max-width: 992px) {
+  .search-form {
+    grid-template-columns: 1fr 1fr;
+  }
+  .search-form .form-group-destination {
+    grid-column: 1 / -1;
+  }
+  .search-form button[type="submit"] {
+    grid-column: 1 / -1;
+    margin-top: 0.25rem;
+  }
+}
+
+@media (max-width: 540px) {
+  .search-form {
+    grid-template-columns: 1fr;
+  }
 }
 
 .form-group {
@@ -316,8 +347,12 @@ a {
   gap: 0.4rem;
 }
 
+.form-group-compact {
+  max-width: 160px;
+}
+
 .form-group label {
-  font-size: 0.82rem;
+  font-size: var(--fs-sm);
   font-weight: 600;
   color: var(--on-surface-variant);
   text-transform: uppercase;
@@ -330,7 +365,7 @@ a {
   border-radius: var(--radius-md);
   background: var(--surface-container-lowest);
   font-family: inherit;
-  font-size: 0.95rem;
+  font-size: var(--fs-base);
   color: var(--on-surface);
   transition: var(--transition-fast);
   width: 100%;
@@ -340,6 +375,44 @@ a {
   outline: none;
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(148, 68, 46, 0.15);
+}
+
+/* Password Field with Show/Hide Toggle */
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.password-input-wrapper .form-control {
+  padding-right: 2.75rem;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  padding: 0.35rem;
+  color: var(--on-surface-variant);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  transition: color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.password-toggle-btn:hover {
+  color: var(--primary);
+}
+
+.password-toggle-btn:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }
 
 /* Buttons */
@@ -523,8 +596,19 @@ a {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-top: 1rem;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  padding-top: 1.25rem;
+  padding-bottom: 0.25rem;
+  margin-top: auto;
   border-top: 1px solid var(--surface-container-high);
+}
+
+.room-card-footer span {
+  font-size: var(--fs-sm);
+  color: var(--on-surface-variant);
+  font-weight: 500;
+  line-height: 1.4;
 }
 
 /* Detail Page */

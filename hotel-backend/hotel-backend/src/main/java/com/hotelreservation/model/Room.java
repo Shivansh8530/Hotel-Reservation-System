@@ -23,6 +23,7 @@ public class Room {
     private int capacity;
     private List<String> amenities;
     private String description;
+    private String hotelId;       // Optional reference to parent Hotel
     private boolean available = true;
     private String imageUrl;
 }

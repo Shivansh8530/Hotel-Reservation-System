@@ -52,7 +52,8 @@ public class AdminController {
     }
 
     @PutMapping("/users/{id}/role")
-    public ResponseEntity<UserResponse> updateUserRole(@PathVariable String id, @RequestBody RoleUpdateRequest request) {
+    public ResponseEntity<UserResponse> updateUserRole(@PathVariable String id,
+            @RequestBody RoleUpdateRequest request) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
 
@@ -63,7 +64,8 @@ public class AdminController {
         user.setRole(request.getRole());
         User saved = userRepository.save(user);
 
-        return ResponseEntity.ok(new UserResponse(saved.getId(), saved.getName(), saved.getEmail(), saved.getRole(), saved.getPhone()));
+        return ResponseEntity.ok(
+                new UserResponse(saved.getId(), saved.getName(), saved.getEmail(), saved.getRole(), saved.getPhone()));
     }
 
     @Data
@@ -73,7 +75,7 @@ public class AdminController {
 
     @Data
     public static class UserResponse {
-                        
+
         private final String id;
         private final String name;
         private final String email;

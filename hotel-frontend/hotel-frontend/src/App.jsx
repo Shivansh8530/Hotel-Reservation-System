@@ -2,6 +2,8 @@ import { Routes, Route } from 'react-router-dom'
 import Navbar from './components/Navbar.jsx'
 import Footer from './components/Footer.jsx'
 import { PrivateRoute, AdminRoute } from './components/PrivateRoute.jsx'
+import Home from './pages/Home.jsx'
+import HotelDetail from './pages/HotelDetail.jsx'
 import Rooms from './pages/Rooms.jsx'
 import RoomDetail from './pages/RoomDetail.jsx'
 import Login from './pages/Login.jsx'
@@ -17,7 +19,8 @@ export default function App() {
       <Navbar />
       <div style={{ flex: 1 }}>
         <Routes>
-          <Route path="/" element={<Rooms />} />
+          <Route path="/" element={<Home />} />
+          <Route path="/hotels/:id" element={<HotelDetail />} />
           <Route path="/rooms" element={<Rooms />} />
           <Route path="/rooms/:id" element={<RoomDetail />} />
           <Route path="/login" element={<Login />} />

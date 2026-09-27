@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { formatINR } from '../utils/currency.js'
 
 const ROOM_IMAGES = {
   DELUXE: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=800&q=80',
@@ -11,6 +12,7 @@ const ROOM_IMAGES = {
 
 export default function RoomCard({ room }) {
   const imageSrc = room.imageUrl || ROOM_IMAGES[room.roomType?.toUpperCase()] || ROOM_IMAGES.DEFAULT
+  const price = room.pricePerNight ?? room.price ?? 0
 
   return (
     <div className="room-card-container">
@@ -18,7 +20,7 @@ export default function RoomCard({ room }) {
         <img src={imageSrc} alt={room.name || `Room ${room.roomNumber}`} />
         <span className="room-type-badge">{room.roomType || 'Boutique Room'}</span>
         <div className="room-price-badge">
-          ${room.pricePerNight || room.price} <span>/ night</span>
+          {formatINR(price)} <span>/ night</span>
         </div>
       </div>
 
@@ -28,13 +30,15 @@ export default function RoomCard({ room }) {
           {room.description || 'Designed with organic linen, floor-to-ceiling windows, and custom timber furniture for ultimate relaxation.'}
         </p>
 
-        <div className="amenity-pills">
-          {(room.amenities || ['King Bed', 'Ocean View', 'Free Wi-Fi', 'Private Balcony']).slice(0, 4).map((amenity, i) => (
-            <span key={i} className="amenity-pill">
-              {amenity}
-            </span>
-          ))}
-        </div>
+        {room.amenities && room.amenities.length > 0 && (
+          <div className="amenity-pills">
+            {room.amenities.slice(0, 4).map((amenity, i) => (
+              <span key={i} className="amenity-pill">
+                {amenity}
+              </span>
+            ))}
+          </div>
+        )}
 
         <div className="room-card-footer">
           <span style={{ fontSize: '0.85rem', color: 'var(--on-surface-variant)', fontWeight: '500' }}>

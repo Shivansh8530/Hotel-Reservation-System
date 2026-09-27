@@ -26,8 +26,12 @@ export default function Navbar() {
         </Link>
 
         <nav className="nav-links">
-          <Link to="/rooms" className={`nav-link ${isActive('/rooms') || isActive('/') ? 'active' : ''}`}>
-            Explore Rooms
+          <Link to="/" className={`nav-link ${isActive('/') ? 'active' : ''}`}>
+            Explore Hotels
+          </Link>
+
+          <Link to="/rooms" className={`nav-link ${isActive('/rooms') ? 'active' : ''}`}>
+            Suites & Rooms
           </Link>
           
           {user && (
@@ -37,8 +41,8 @@ export default function Navbar() {
           )}
           
           {isAdmin && (
-            <Link to="/admin" className={`nav-link ${isActive('/admin') ? 'active' : ''}`}>
-              Admin Control
+            <Link to="/admin" className={`nav-link ${isActive('/admin') ? 'active' : ''}`} id="nav-admin-dashboard">
+              Admin Dashboard
             </Link>
           )}
 

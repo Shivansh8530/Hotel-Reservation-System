@@ -68,6 +68,17 @@ public class RoomService {
         roomRepository.deleteById(id);
     }
 
+    public List<Room> getRoomsByHotel(String hotelId) {
+        return roomRepository.findByHotelId(hotelId);
+    }
+
+    public List<Room> searchAvailableRoomsForHotel(String hotelId, LocalDate checkIn, LocalDate checkOut) {
+        List<Room> candidateRooms = roomRepository.findByHotelIdAndAvailableTrue(hotelId);
+        return candidateRooms.stream()
+                .filter(room -> isRoomFreeForDates(room.getId(), checkIn, checkOut))
+                .toList();
+    }
+
     private void mapRequestToRoom(RoomRequest request, Room room) {
         room.setRoomNumber(request.getRoomNumber());
         room.setRoomType(request.getRoomType());
@@ -75,6 +86,7 @@ public class RoomService {
         room.setCapacity(request.getCapacity());
         room.setAmenities(request.getAmenities());
         room.setDescription(request.getDescription());
+        room.setHotelId(request.getHotelId());
         room.setImageUrl(request.getImageUrl());
         room.setAvailable(request.isAvailable());
     }
