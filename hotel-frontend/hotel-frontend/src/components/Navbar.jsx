@@ -33,13 +33,13 @@ export default function Navbar() {
           <Link to="/rooms" className={`nav-link ${isActive('/rooms') ? 'active' : ''}`}>
             Suites & Rooms
           </Link>
-          
+
           {user && (
             <Link to="/my-bookings" className={`nav-link ${isActive('/my-bookings') ? 'active' : ''}`}>
               My Reservations
             </Link>
           )}
-          
+
           {isAdmin && (
             <Link to="/admin" className={`nav-link ${isActive('/admin') ? 'active' : ''}`} id="nav-admin-dashboard">
               Admin Dashboard
@@ -79,7 +79,7 @@ export default function Navbar() {
           ) : (
             <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
               <Link to="/login" className="btn btn-secondary btn-pill" style={{ padding: '0.5rem 1.2rem' }}>
-                Sign In
+                Log In
               </Link>
               <Link to="/signup" className="btn btn-primary btn-pill" style={{ padding: '0.5rem 1.2rem' }}>
                 Register

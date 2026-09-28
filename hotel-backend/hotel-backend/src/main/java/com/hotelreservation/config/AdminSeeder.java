@@ -158,7 +158,80 @@ public class AdminSeeder {
                                 r4.setAvailable(true);
                                 roomRepository.save(r4);
 
-                                System.out.println("Seeded 3 initial internal hotels with associated rooms.");
+                                // Additional Rooms:
+                                com.hotelreservation.model.Room r5 = new com.hotelreservation.model.Room();
+                                r5.setHotelId(savedH1.getId());
+                                r5.setRoomNumber("103");
+                                r5.setRoomType("VILLA");
+                                r5.setDescription("Exclusive over-water private villa sanctuary featuring uninterrupted Arabian Sea panoramas, sun terrace, and dedicated evening turn-down.");
+                                r5.setPricePerNight(18500.0);
+                                r5.setCapacity(4);
+                                r5.setAmenities(java.util.List.of("Private Infinity Pool", "Oceanfront Deck", "Outdoor Rain Shower", "Personal Butler", "Complimentary Champagne"));
+                                r5.setImageUrl("https://images.unsplash.com/photo-1540541338287-41700207dee6?auto=format&fit=crop&w=1200&q=80");
+                                r5.setAvailable(true);
+                                roomRepository.save(r5);
+
+                                com.hotelreservation.model.Room r6 = new com.hotelreservation.model.Room();
+                                r6.setHotelId(savedH1.getId());
+                                r6.setRoomNumber("104");
+                                r6.setRoomType("EXECUTIVE");
+                                r6.setDescription("Sophisticated coastal executive sanctuary with elevated panoramic balcony, high-speed optic fiber, and designer marble bathroom.");
+                                r6.setPricePerNight(8999.0);
+                                r6.setCapacity(2);
+                                r6.setAmenities(java.util.List.of("Sunset Balcony", "Smart Workstation", "Espresso Bar", "King Bed", "Whirlpool Tub"));
+                                r6.setImageUrl("https://images.unsplash.com/photo-1591088398332-8a7791972843?auto=format&fit=crop&w=1200&q=80");
+                                r6.setAvailable(true);
+                                roomRepository.save(r6);
+
+                                com.hotelreservation.model.Room r7 = new com.hotelreservation.model.Room();
+                                r7.setHotelId(savedH2.getId());
+                                r7.setRoomNumber("202");
+                                r7.setRoomType("DELUXE");
+                                r7.setDescription("Immaculate heritage chamber showcasing authentic Rajasthani arches, private seating niche overlooking the fountain courtyard.");
+                                r7.setPricePerNight(6900.0);
+                                r7.setCapacity(2);
+                                r7.setAmenities(java.util.List.of("Courtyard Balcony", "Carved Teak Bed", "Hand-painted Frescoes", "Free Wi-Fi", "Artisan Tea Set"));
+                                r7.setImageUrl("https://images.unsplash.com/photo-1566665797739-1674de7a421a?auto=format&fit=crop&w=1200&q=80");
+                                r7.setAvailable(true);
+                                roomRepository.save(r7);
+
+                                com.hotelreservation.model.Room r8 = new com.hotelreservation.model.Room();
+                                r8.setHotelId(savedH2.getId());
+                                r8.setRoomNumber("203");
+                                r8.setRoomType("VILLA");
+                                r8.setDescription("The Maharaja Royal Pavilion offering decadent privacy, secluded courtyard garden, marble whirlpool bath, and vintage chandelier.");
+                                r8.setPricePerNight(14500.0);
+                                r8.setCapacity(4);
+                                r8.setAmenities(java.util.List.of("Private Courtyard Jacuzzi", "Royal Dining Chamber", "Antique Four-Poster Bed", "Palace Garden View"));
+                                r8.setImageUrl("https://images.unsplash.com/photo-1578683010236-d716f9a3f461?auto=format&fit=crop&w=1200&q=80");
+                                r8.setAvailable(true);
+                                roomRepository.save(r8);
+
+                                com.hotelreservation.model.Room r9 = new com.hotelreservation.model.Room();
+                                r9.setHotelId(savedH3.getId());
+                                r9.setRoomNumber("302");
+                                r9.setRoomType("SUITE");
+                                r9.setDescription("Skyline alpine chalet suite elevated among ancient deodars, featuring hand-carved cedar beams, glass-front wood stove, and star-gazing deck.");
+                                r9.setPricePerNight(7800.0);
+                                r9.setCapacity(3);
+                                r9.setAmenities(java.util.List.of("Himalayan View Balcony", "Stone Fireplace", "Cedar Jacuzzi", "Heated Floors", "Organic Breakfast"));
+                                r9.setImageUrl("https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80");
+                                r9.setAvailable(true);
+                                roomRepository.save(r9);
+
+                                com.hotelreservation.model.Room r10 = new com.hotelreservation.model.Room();
+                                r10.setHotelId(savedH3.getId());
+                                r10.setRoomNumber("303");
+                                r10.setRoomType("DELUXE");
+                                r10.setDescription("Sun-drenched alpine haven with panoramic snow-capped ridge outlooks, private timber veranda, and handcrafted wool throws.");
+                                r10.setPricePerNight(5600.0);
+                                r10.setCapacity(2);
+                                r10.setAmenities(java.util.List.of("Valley View", "Scandinavian Wood Stove", "Plush Down Duvet", "Artisanal Coffee Bar"));
+                                r10.setImageUrl("https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=1200&q=80");
+                                r10.setAvailable(true);
+                                roomRepository.save(r10);
+
+                                System.out.println("Seeded initial internal hotels with 10 associated rooms.");
                         }
                 };
         }

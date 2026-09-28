@@ -93,7 +93,6 @@ export default function Signup() {
               type="text"
               name="name"
               className="form-control"
-              placeholder="Eleanor Vance"
               value={form.name}
               onChange={handleChange}
               required
@@ -106,7 +105,6 @@ export default function Signup() {
               type="email"
               name="email"
               className="form-control"
-              placeholder="eleanor@example.com"
               value={form.email}
               onChange={handleChange}
               required
@@ -119,7 +117,6 @@ export default function Signup() {
               type="tel"
               name="phone"
               className="form-control"
-              placeholder="+91 98765 43210"
               value={form.phone}
               onChange={handleChange}
             />
@@ -132,7 +129,6 @@ export default function Signup() {
                 type={showPassword ? 'text' : 'password'}
                 name="password"
                 className="form-control"
-                placeholder="••••••••"
                 value={form.password}
                 onChange={handleChange}
                 required
@@ -151,12 +147,12 @@ export default function Signup() {
           </div>
 
           <button type="submit" className="btn btn-primary btn-pill" disabled={loading} style={{ width: '100%', padding: '0.85rem', marginTop: '0.5rem' }}>
-            {loading ? 'Creating Account...' : 'Complete Registration'}
+            {loading ? 'Creating Account...' : 'Register to StayEase'}
           </button>
         </form>
 
         <p style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.9rem', color: 'var(--on-surface-variant)' }}>
-          Already registered? <Link to="/login" style={{ color: 'var(--primary)', fontWeight: '600' }}>Sign In</Link>
+          Already registered? <Link to="/login" style={{ color: 'var(--primary)', fontWeight: '600' }}>Log In</Link>
         </p>
       </div>
     </div>

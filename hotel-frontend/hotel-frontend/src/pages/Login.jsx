@@ -128,7 +128,7 @@ export default function Login() {
           </div>
 
           <button type="submit" className="btn btn-primary btn-pill" disabled={loading} style={{ width: '100%', padding: '0.85rem' }}>
-            {loading ? 'Signing In...' : 'Sign In to StayEase'}
+            {loading ? 'Signing In...' : 'Log In to StayEase'}
           </button>
         </form>
 
