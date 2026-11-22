@@ -1,6 +1,7 @@
 package com.hotelreservation.service;
 
 import com.hotelreservation.dto.BookingRequest;
+import com.hotelreservation.dto.RescheduleBookingRequest;
 import com.hotelreservation.exception.ApiException;
 import com.hotelreservation.model.Booking;
 import com.hotelreservation.model.Room;
@@ -68,6 +69,46 @@ public class BookingService {
         }
 
         booking.setStatus("CANCELLED");
+        return bookingRepository.save(booking);
+    }
+
+    public Booking rescheduleBooking(String bookingId, String userId, boolean isAdmin, RescheduleBookingRequest request) {
+        if (!request.getCheckOut().isAfter(request.getCheckIn())) {
+            throw new ApiException("Check-out date must be after check-in date", HttpStatus.BAD_REQUEST);
+        }
+
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new ApiException("Booking not found", HttpStatus.NOT_FOUND));
+
+        if (!isAdmin && !booking.getUserId().equals(userId)) {
+            throw new ApiException("You can only reschedule your own bookings", HttpStatus.FORBIDDEN);
+        }
+
+        if (!"CONFIRMED".equalsIgnoreCase(booking.getStatus())) {
+            throw new ApiException("Only confirmed bookings can be rescheduled", HttpStatus.BAD_REQUEST);
+        }
+
+        Room room = roomRepository.findById(booking.getRoomId())
+                .orElseThrow(() -> new ApiException("Associated room not found", HttpStatus.NOT_FOUND));
+
+        // Check if other confirmed bookings overlap for this room, excluding this booking itself
+        boolean overlaps = bookingRepository.findByRoomId(room.getId()).stream()
+                .filter(b -> !b.getId().equals(booking.getId()))
+                .filter(b -> "CONFIRMED".equalsIgnoreCase(b.getStatus()))
+                .anyMatch(b -> request.getCheckIn().isBefore(b.getCheckOut())
+                        && request.getCheckOut().isAfter(b.getCheckIn()));
+
+        if (overlaps) {
+            throw new ApiException("The room is not available for the requested new dates. Please choose different dates.", HttpStatus.CONFLICT);
+        }
+
+        long nights = ChronoUnit.DAYS.between(request.getCheckIn(), request.getCheckOut());
+        double newTotalPrice = nights * room.getPricePerNight();
+
+        booking.setCheckIn(request.getCheckIn());
+        booking.setCheckOut(request.getCheckOut());
+        booking.setTotalPrice(newTotalPrice);
+
         return bookingRepository.save(booking);
     }
 }

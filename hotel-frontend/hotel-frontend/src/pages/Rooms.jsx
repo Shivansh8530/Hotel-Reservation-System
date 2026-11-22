@@ -53,10 +53,11 @@ export default function Rooms() {
 
         {/* Floating Search Widget */}
         <div className="search-widget">
-          <form onSubmit={handleSearch} className="search-form">
+          <form onSubmit={handleSearch} className="search-form search-form-rooms" role="search" aria-label="Search available room dates">
             <div className="form-group">
-              <label>Check-In Date</label>
+              <label htmlFor="rooms-search-checkin">Check-In Date</label>
               <input
+                id="rooms-search-checkin"
                 type="date"
                 className="form-control"
                 value={dates.checkIn}
@@ -64,8 +65,9 @@ export default function Rooms() {
               />
             </div>
             <div className="form-group">
-              <label>Check-Out Date</label>
+              <label htmlFor="rooms-search-checkout">Check-Out Date</label>
               <input
+                id="rooms-search-checkout"
                 type="date"
                 className="form-control"
                 value={dates.checkOut}
@@ -73,8 +75,8 @@ export default function Rooms() {
               />
             </div>
             <div className="form-group">
-              <label>Guests</label>
-              <select className="form-control">
+              <label htmlFor="rooms-search-guests">Guests</label>
+              <select id="rooms-search-guests" className="form-control">
                 <option>1 Guest</option>
                 <option defaultValue>2 Guests</option>
                 <option>3 Guests</option>

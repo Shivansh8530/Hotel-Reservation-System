@@ -40,29 +40,35 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable())
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> auth
-                // Public endpoints
-                .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/rooms/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/hotels/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/reviews/**").permitAll()
+                .csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        // Public endpoints
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/rooms/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/hotels/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/reviews/**").permitAll()
 
-                // Admin-only endpoints
-                .requestMatchers(HttpMethod.POST, "/api/rooms/**").hasAuthority("ROLE_ADMIN")
-                .requestMatchers(HttpMethod.PUT, "/api/rooms/**").hasAuthority("ROLE_ADMIN")
-                .requestMatchers(HttpMethod.DELETE, "/api/rooms/**").hasAuthority("ROLE_ADMIN")
-                .requestMatchers(HttpMethod.POST, "/api/hotels/**").hasAuthority("ROLE_ADMIN")
-                .requestMatchers(HttpMethod.PUT, "/api/hotels/**").hasAuthority("ROLE_ADMIN")
-                .requestMatchers(HttpMethod.DELETE, "/api/hotels/**").hasAuthority("ROLE_ADMIN")
-                .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
+                        // Admin-only endpoints
+                        .requestMatchers(HttpMethod.POST, "/api/rooms/**")
+                        .hasAnyAuthority("ROLE_ADMIN", "ROLE_OWNER", "ROLE_SUPER_ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/rooms/**")
+                        .hasAnyAuthority("ROLE_ADMIN", "ROLE_OWNER", "ROLE_SUPER_ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/rooms/**")
+                        .hasAnyAuthority("ROLE_ADMIN", "ROLE_OWNER", "ROLE_SUPER_ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/hotels/**")
+                        .hasAnyAuthority("ROLE_ADMIN", "ROLE_OWNER", "ROLE_SUPER_ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/hotels/**")
+                        .hasAnyAuthority("ROLE_ADMIN", "ROLE_OWNER", "ROLE_SUPER_ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/hotels/**")
+                        .hasAnyAuthority("ROLE_ADMIN", "ROLE_OWNER", "ROLE_SUPER_ADMIN")
+                        .requestMatchers("/api/admin/**")
+                        .hasAnyAuthority("ROLE_ADMIN", "ROLE_OWNER", "ROLE_SUPER_ADMIN")
 
-                // Everything else needs a valid JWT
-                .anyRequest().authenticated()
-            )
-            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                        // Everything else needs a valid JWT
+                        .anyRequest().authenticated())
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -73,7 +79,9 @@ public class SecurityConfig {
         // For local dev this covers Vite's default port; add your deployed frontend URL here too.
         configuration.setAllowedOrigins(List.of(
                 "http://localhost:5173",
-                "http://localhost:3000"
+                "http://localhost:3000",
+                "https://hotel-resevation-8080.web.app",
+                "https://hotel-resevation-8080.firebaseapp.com"
         ));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));

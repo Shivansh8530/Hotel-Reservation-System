@@ -41,7 +41,7 @@ public class ReviewController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteReview(@PathVariable String id) {
         User user = currentUser();
-        boolean isAdmin = "ADMIN".equals(user.getRole());
+        boolean isAdmin = user.isAdminOrOwner();
         reviewService.deleteReview(id, user.getId(), isAdmin);
         return ResponseEntity.noContent().build();
     }

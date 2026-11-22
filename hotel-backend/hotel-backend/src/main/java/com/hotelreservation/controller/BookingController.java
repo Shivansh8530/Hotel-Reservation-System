@@ -1,10 +1,12 @@
 package com.hotelreservation.controller;
 
 import com.hotelreservation.dto.BookingRequest;
+import com.hotelreservation.dto.RescheduleBookingRequest;
 import com.hotelreservation.exception.ApiException;
 import com.hotelreservation.model.Booking;
 import com.hotelreservation.model.User;
 import com.hotelreservation.repository.UserRepository;
+import com.hotelreservation.service.AdminLogService;
 import com.hotelreservation.service.BookingService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +25,7 @@ public class BookingController {
 
     private final BookingService bookingService;
     private final UserRepository userRepository;
+    private final AdminLogService adminLogService;
 
     @PostMapping
     public ResponseEntity<Booking> createBooking(@Valid @RequestBody BookingRequest request) {
@@ -39,8 +42,42 @@ public class BookingController {
     @PutMapping("/{id}/cancel")
     public ResponseEntity<Booking> cancelBooking(@PathVariable String id) {
         User user = currentUser();
-        boolean isAdmin = "ADMIN".equals(user.getRole());
-        return ResponseEntity.ok(bookingService.cancelBooking(id, user.getId(), isAdmin));
+        boolean isAdmin = user.isAdminOrOwner();
+        Booking cancelled = bookingService.cancelBooking(id, user.getId(), isAdmin);
+
+        if (isAdmin) {
+            adminLogService.log(
+                    user,
+                    "CANCELLED_BOOKING",
+                    "BOOKING",
+                    id,
+                    String.format("Admin cancelled booking reference %s", id)
+            );
+        }
+
+        return ResponseEntity.ok(cancelled);
+    }
+
+    @PutMapping("/{id}/reschedule")
+    public ResponseEntity<Booking> rescheduleBooking(
+            @PathVariable String id,
+            @Valid @RequestBody RescheduleBookingRequest request) {
+        User user = currentUser();
+        boolean isAdmin = user.isAdminOrOwner();
+        Booking rescheduled = bookingService.rescheduleBooking(id, user.getId(), isAdmin, request);
+
+        if (isAdmin) {
+            adminLogService.log(
+                    user,
+                    "RESCHEDULED_BOOKING",
+                    "BOOKING",
+                    id,
+                    String.format("Rescheduled booking reference %s to %s - %s (Total: ₹%.0f)",
+                            id, rescheduled.getCheckIn(), rescheduled.getCheckOut(), rescheduled.getTotalPrice())
+            );
+        }
+
+        return ResponseEntity.ok(rescheduled);
     }
 
     // Admin-only (enforced in SecurityConfig via /api/admin/** is separate;
@@ -48,7 +85,7 @@ public class BookingController {
     @GetMapping("/all")
     public ResponseEntity<List<Booking>> getAllBookings() {
         User user = currentUser();
-        if (!"ADMIN".equals(user.getRole())) {
+        if (!user.isAdminOrOwner()) {
             throw new ApiException("Admin access required", HttpStatus.FORBIDDEN);
         }
         return ResponseEntity.ok(bookingService.getAllBookings());

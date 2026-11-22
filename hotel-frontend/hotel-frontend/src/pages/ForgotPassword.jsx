@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import api from '../services/api'
+import { forgotPassword } from '../services/api.js'
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState('')
@@ -15,7 +15,7 @@ export default function ForgotPassword() {
     setLoading(true)
 
     try {
-      const res = await api.post('/auth/forgot-password', { email })
+      const res = await forgotPassword({ email })
       setMessage(res.data.message || 'Password reset link sent (check console)')
     } catch (err) {
       setError(err.response?.data?.message || err.response?.data?.error || 'Failed to request reset')
@@ -39,14 +39,17 @@ export default function ForgotPassword() {
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           <div className="form-group">
-            <label>Email Address</label>
+            <label htmlFor="forgot-email">Email Address</label>
             <input
+              id="forgot-email"
               type="email"
+              name="email"
               className="form-control"
               placeholder="Enter your email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              autoComplete="email"
             />
           </div>
 

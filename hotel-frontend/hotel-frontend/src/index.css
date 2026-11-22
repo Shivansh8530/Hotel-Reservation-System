@@ -322,6 +322,12 @@ a {
   align-items: end;
 }
 
+/* 4-item Search Form (Rooms directory) - distributes columns evenly with no empty trailing space */
+.search-form-rooms {
+  grid-template-columns: 1.2fr 1.2fr 1fr auto;
+  gap: 1.25rem;
+}
+
 @media (max-width: 992px) {
   .search-form {
     grid-template-columns: 1fr 1fr;
@@ -333,10 +339,18 @@ a {
     grid-column: 1 / -1;
     margin-top: 0.25rem;
   }
+  .search-form-rooms {
+    grid-template-columns: 1fr 1fr;
+  }
+  .search-form-rooms button[type="submit"] {
+    grid-column: 1 / -1;
+    margin-top: 0.25rem;
+  }
 }
 
 @media (max-width: 540px) {
-  .search-form {
+  .search-form,
+  .search-form-rooms {
     grid-template-columns: 1fr;
   }
 }
@@ -413,6 +427,83 @@ a {
 .password-toggle-btn:focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
+}
+
+/* Compact, Sleek Real-time Interactive Password Requirements */
+.password-requirements-compact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.75rem;
+  margin-top: 0.45rem;
+  padding: 0.15rem 0;
+}
+
+.password-requirement-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.32rem;
+  font-size: 0.76rem;
+  line-height: 1.25;
+  color: var(--secondary);
+  opacity: 0.8;
+  transition: color 0.15s ease, opacity 0.15s ease;
+}
+
+.password-requirement-item .req-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--outline);
+  transition: color 0.15s ease, transform 0.15s ease;
+}
+
+/* Satisfied state */
+.password-requirement-item.is-satisfied {
+  color: var(--tertiary);
+  opacity: 1;
+  font-weight: 500;
+}
+
+.password-requirement-item.is-satisfied .req-icon {
+  color: var(--tertiary);
+}
+
+/* Password Match Indicator */
+.password-match-status {
+  font-size: var(--fs-xs);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.4rem;
+  font-weight: 500;
+  transition: color var(--transition-fast);
+}
+
+.password-match-status.match-success {
+  color: var(--tertiary);
+}
+
+.password-match-status.match-error {
+  color: var(--error);
+}
+
+.form-control.is-valid {
+  border-color: var(--tertiary);
+}
+
+.form-control.is-valid:focus {
+  border-color: var(--tertiary);
+  box-shadow: 0 0 0 3px rgba(71, 101, 0, 0.18);
+}
+
+.form-control.is-invalid {
+  border-color: var(--error);
+}
+
+.form-control.is-invalid:focus {
+  border-color: var(--error);
+  box-shadow: 0 0 0 3px rgba(186, 26, 26, 0.18);
 }
 
 /* Buttons */
@@ -756,6 +847,18 @@ a {
   background: var(--error-container);
   color: var(--error);
   border: 1px solid rgba(186, 26, 26, 0.2);
+}
+
+.status-pending {
+  background: rgba(217, 119, 6, 0.15);
+  color: #b45309;
+  border: 1px solid rgba(217, 119, 6, 0.3);
+}
+
+.status-owner {
+  background: rgba(180, 83, 9, 0.18);
+  color: #b45309;
+  border: 1px solid rgba(180, 83, 9, 0.35);
 }
 
 /* Alert Boxes */

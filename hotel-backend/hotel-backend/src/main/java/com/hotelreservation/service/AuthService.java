@@ -47,14 +47,24 @@ public class AuthService {
             throw new BadCredentialsException("Invalid email or password");
         }
 
+        if (user.isOwnerOrSuperAdmin() && !"OWNER".equalsIgnoreCase(user.getRole()) && !"SUPER_ADMIN".equalsIgnoreCase(user.getRole())) {
+            user.setRole("OWNER");
+            user = userRepository.save(user);
+        }
+
         String token = jwtUtil.generateToken(user.getEmail(), user.getId(), user.getRole());
         return new AuthResponse(token, user.getId(), user.getName(), user.getEmail(), user.getRole());
     }
 
     public void forgotPassword(com.hotelreservation.dto.ForgotPasswordRequest request) {
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new ApiException("User not found with this email", HttpStatus.NOT_FOUND));
+        java.util.Optional<User> userOpt = userRepository.findByEmail(request.getEmail());
+        if (userOpt.isEmpty()) {
+            // OWASP best practice: do not leak whether an account exists
+            System.out.println("Password reset requested for unregistered email: " + request.getEmail());
+            return;
+        }
 
+        User user = userOpt.get();
         String token = java.util.UUID.randomUUID().toString();
         user.setResetToken(token);
         user.setResetTokenExpiry(java.time.LocalDateTime.now().plusMinutes(15)); // 15 mins expiry
@@ -64,7 +74,7 @@ public class AuthService {
         // In a real application, we would send an email here with JavaMailSender
         System.out.println("\n=======================================================");
         System.out.println("PASSWORD RESET REQUESTED FOR: " + user.getEmail());
-        System.out.println("RESET LINK: http://localhost:5173/reset-password?token=" + token);
+        System.out.println("RESET LINK: https://hotel-resevation-8080.web.app/reset-password?token=" + token);
         System.out.println("=======================================================\n");
     }
 
@@ -80,5 +90,33 @@ public class AuthService {
         user.setResetToken(null);
         user.setResetTokenExpiry(null);
         userRepository.save(user);
+    }
+
+    public AuthResponse googleLogin(com.hotelreservation.dto.GoogleAuthRequest request) {
+        String email = request.getEmail();
+        if (email == null || email.isBlank()) {
+            throw new ApiException("Email is required for Google login", HttpStatus.BAD_REQUEST);
+        }
+
+        User user = userRepository.findByEmail(email).orElseGet(() -> {
+            User newUser = new User();
+            newUser.setEmail(email);
+            String name = request.getName();
+            if (name == null || name.isBlank()) {
+                name = email.split("@")[0];
+            }
+            newUser.setName(name);
+            newUser.setPassword(passwordEncoder.encode(java.util.UUID.randomUUID().toString()));
+            newUser.setRole("USER");
+            return userRepository.save(newUser);
+        });
+
+        if (user.isOwnerOrSuperAdmin() && !"OWNER".equalsIgnoreCase(user.getRole()) && !"SUPER_ADMIN".equalsIgnoreCase(user.getRole())) {
+            user.setRole("OWNER");
+            user = userRepository.save(user);
+        }
+
+        String token = jwtUtil.generateToken(user.getEmail(), user.getId(), user.getRole());
+        return new AuthResponse(token, user.getId(), user.getName(), user.getEmail(), user.getRole());
     }
 }

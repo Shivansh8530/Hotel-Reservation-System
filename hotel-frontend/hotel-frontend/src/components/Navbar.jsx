@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext.jsx'
 import { useTheme } from '../context/ThemeContext.jsx'
 
 export default function Navbar() {
-  const { user, logout, isAdmin } = useAuth()
+  const { user, logout, isAdmin, isOwner } = useAuth()
   const { theme, toggleTheme } = useTheme()
   const navigate = useNavigate()
   const location = useLocation()
@@ -67,7 +67,9 @@ export default function Navbar() {
               <div className="user-badge">
                 <span>{user.name}</span>
                 {isAdmin ? (
-                  <span className="user-role-tag">Admin</span>
+                  <span className="user-role-tag" style={isOwner ? { background: '#b45309', color: '#fff' } : {}}>
+                    {isOwner ? '👑 Owner' : 'Admin'}
+                  </span>
                 ) : (
                   <span className="user-role-tag" style={{ background: 'var(--secondary)' }}>Guest</span>
                 )}

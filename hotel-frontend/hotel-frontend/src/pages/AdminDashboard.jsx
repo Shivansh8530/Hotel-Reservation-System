@@ -10,8 +10,10 @@ import {
   createAdminUser,
   getHotels,
   createHotel,
-  deleteHotel
+  deleteHotel,
+  getAdminLogs
 } from '../services/api.js'
+import { useAuth } from '../context/AuthContext.jsx'
 import { formatINR } from '../utils/currency.js'
 
 const emptyRoom = {
@@ -39,11 +41,16 @@ const emptyHotel = {
 }
 
 export default function AdminDashboard() {
+  const { user: currentUser, isOwner } = useAuth()
   const [tab, setTab] = useState('rooms')
   const [rooms, setRooms] = useState([])
   const [hotels, setHotels] = useState([])
   const [bookings, setBookings] = useState([])
   const [users, setUsers] = useState([])
+  const [logs, setLogs] = useState([])
+  const [logsLoading, setLogsLoading] = useState(false)
+  const [logFilter, setLogFilter] = useState('other') // 'other' | 'all'
+  const [logSearch, setLogSearch] = useState('')
   
   const [showAdminForm, setShowAdminForm] = useState(false)
   const [adminForm, setAdminForm] = useState({ name: '', email: '', password: '', phone: '' })
@@ -56,6 +63,18 @@ export default function AdminDashboard() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
+
+  const loadLogs = async () => {
+    setLogsLoading(true)
+    try {
+      const res = await getAdminLogs()
+      setLogs(res.data || [])
+    } catch (err) {
+      console.error('Failed to load admin logs:', err)
+    } finally {
+      setLogsLoading(false)
+    }
+  }
 
   const loadData = async () => {
     setLoading(true)
@@ -86,9 +105,10 @@ export default function AdminDashboard() {
       setUsers(resU.data || [])
     } catch (err) {
       console.error('Failed to load users:', err)
-    } finally {
-      setLoading(false)
     }
+
+    await loadLogs()
+    setLoading(false)
   }
 
   useEffect(() => {
@@ -139,6 +159,7 @@ export default function AdminDashboard() {
       resetForm()
       const resR = await getRooms()
       setRooms(resR.data || [])
+      loadLogs()
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to save room. Check input values.')
     }
@@ -150,18 +171,24 @@ export default function AdminDashboard() {
       await deleteRoom(id)
       setSuccess('Room deleted successfully.')
       setRooms(rooms.filter((r) => r.id !== id))
+      loadLogs()
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to delete room.')
     }
   }
 
   const handleRoleToggle = async (userId, currentRole) => {
+    if (!isOwner) {
+      setError('Permission denied: Only the Owner / Super Admin can promote or demote users.')
+      return
+    }
     const newRole = currentRole === 'ADMIN' ? 'USER' : 'ADMIN'
     if (!confirm(`Change this user's role to ${newRole}?`)) return
     try {
       await updateUserRole(userId, { role: newRole })
       setSuccess(`User role updated to ${newRole}.`)
       setUsers(users.map((u) => (u.id === userId ? { ...u, role: newRole } : u)))
+      loadLogs()
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to update user role.')
     }
@@ -175,6 +202,10 @@ export default function AdminDashboard() {
     e.preventDefault()
     setError('')
     setSuccess('')
+    if (!isOwner) {
+      setError('Permission denied: Only the Owner / Super Admin can create or invite new admins.')
+      return
+    }
     try {
       await createAdminUser(adminForm)
       setSuccess(`Admin ${adminForm.email} created successfully.`)
@@ -182,6 +213,7 @@ export default function AdminDashboard() {
       setAdminForm({ name: '', email: '', password: '', phone: '' })
       const resU = await getAllUsers()
       setUsers(resU.data || [])
+      loadLogs()
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to create admin user.')
     }
@@ -217,6 +249,7 @@ export default function AdminDashboard() {
       setHotelForm(emptyHotel)
       const resH = await getHotels()
       setHotels(resH.data || [])
+      loadLogs()
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to create hotel.')
     }
@@ -228,6 +261,7 @@ export default function AdminDashboard() {
       await deleteHotel(hotelId)
       setSuccess('Hotel removed successfully.')
       setHotels(hotels.filter((h) => h.id !== hotelId))
+      loadLogs()
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to delete hotel.')
     }
@@ -235,15 +269,34 @@ export default function AdminDashboard() {
 
   return (
     <div className="container" style={{ padding: '3rem 1.5rem 6rem' }}>
-      <div style={{ marginBottom: '2rem' }}>
-        <h1 style={{ fontSize: '2.25rem', marginBottom: '0.3rem' }}>Sanctuary Command & Admin Console</h1>
-        <p style={{ color: 'var(--on-surface-variant)', fontSize: '0.98rem' }}>
-          Manage unified hotel properties, room units, customer reservations, and executive credentials.
-        </p>
+      {/* Dashboard Header with Quick Log Button */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', marginBottom: '2rem' }}>
+        <div>
+          <h1 style={{ fontSize: '2.25rem', marginBottom: '0.3rem' }}>Sanctuary Command & Admin Console</h1>
+          <p style={{ color: 'var(--on-surface-variant)', fontSize: '0.98rem' }}>
+            Manage unified hotel properties, room inventory, reservations, user roles, and admin operational audits.
+          </p>
+        </div>
+        <button
+          className={`btn btn-pill ${tab === 'logs' ? 'btn-primary' : 'btn-secondary'}`}
+          onClick={() => {
+            setTab('logs')
+            loadLogs()
+          }}
+          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+          id="btn-quick-admin-logs"
+        >
+          <span>📜 View Admin Logs</span>
+          {logs.length > 0 && (
+            <span style={{ background: tab === 'logs' ? 'rgba(255,255,255,0.25)' : 'var(--primary)', color: '#fff', padding: '0.15rem 0.5rem', borderRadius: 'var(--radius-pill)', fontSize: '0.75rem', fontWeight: 700 }}>
+              {logs.length}
+            </span>
+          )}
+        </button>
       </div>
 
       {/* Stats Summary Bar */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.25rem', marginBottom: '2.5rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1.25rem', marginBottom: '2.5rem' }}>
         <div style={{ background: 'var(--surface-container-lowest)', border: '1px solid var(--outline-variant)', borderRadius: 'var(--radius-md)', padding: '1.25rem' }}>
           <div style={{ fontSize: '0.8rem', color: 'var(--on-surface-variant)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Hotels</div>
           <div style={{ fontSize: '2rem', fontWeight: '700', color: 'var(--on-surface)', marginTop: '0.2rem' }}>{hotels.length}</div>
@@ -262,6 +315,12 @@ export default function AdminDashboard() {
           <div style={{ fontSize: '0.8rem', color: 'var(--on-surface-variant)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total Users</div>
           <div style={{ fontSize: '2rem', fontWeight: '700', color: 'var(--on-surface)', marginTop: '0.2rem' }}>
             {users.length}
+          </div>
+        </div>
+        <div style={{ background: 'var(--surface-container-lowest)', border: '1px solid var(--outline-variant)', borderRadius: 'var(--radius-md)', padding: '1.25rem', cursor: 'pointer' }} onClick={() => setTab('logs')}>
+          <div style={{ fontSize: '0.8rem', color: 'var(--on-surface-variant)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Admin Logs</div>
+          <div style={{ fontSize: '2rem', fontWeight: '700', color: 'var(--tertiary)', marginTop: '0.2rem' }}>
+            {logs.length}
           </div>
         </div>
       </div>
@@ -292,6 +351,16 @@ export default function AdminDashboard() {
         >
           User Management
         </button>
+        <button
+          className={`btn btn-pill ${tab === 'logs' ? 'btn-primary' : 'btn-secondary'}`}
+          onClick={() => {
+            setTab('logs')
+            loadLogs()
+          }}
+          id="tab-btn-admin-logs"
+        >
+          🛡️ Admin Audit Logs
+        </button>
       </div>
 
       {success && <div className="alert alert-success" style={{ marginBottom: '1.5rem' }}>{success}</div>}
@@ -312,12 +381,12 @@ export default function AdminDashboard() {
               <h4 style={{ marginTop: 0, marginBottom: '1.25rem' }}>Create New Sanctuary Property</h4>
               <form onSubmit={handleHotelSubmit} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.25rem' }}>
                 <div className="form-group">
-                  <label>Hotel Name</label>
-                  <input className="form-control" value={hotelForm.name} onChange={(e) => setHotelForm({ ...hotelForm, name: e.target.value })} required />
+                  <label htmlFor="admin-hotel-name">Hotel Name</label>
+                  <input id="admin-hotel-name" name="name" className="form-control" value={hotelForm.name} onChange={(e) => setHotelForm({ ...hotelForm, name: e.target.value })} required />
                 </div>
                 <div className="form-group">
-                  <label>Property Type</label>
-                  <select className="form-control" value={hotelForm.propertyType} onChange={(e) => setHotelForm({ ...hotelForm, propertyType: e.target.value })}>
+                  <label htmlFor="admin-hotel-type">Property Type</label>
+                  <select id="admin-hotel-type" name="propertyType" className="form-control" value={hotelForm.propertyType} onChange={(e) => setHotelForm({ ...hotelForm, propertyType: e.target.value })}>
                     <option value="Hotel">Hotel</option>
                     <option value="Resort">Resort</option>
                     <option value="Heritage">Heritage</option>
@@ -325,24 +394,24 @@ export default function AdminDashboard() {
                   </select>
                 </div>
                 <div className="form-group">
-                  <label>City</label>
-                  <input className="form-control" value={hotelForm.city} onChange={(e) => setHotelForm({ ...hotelForm, city: e.target.value })} required />
+                  <label htmlFor="admin-hotel-city">City</label>
+                  <input id="admin-hotel-city" name="city" className="form-control" value={hotelForm.city} onChange={(e) => setHotelForm({ ...hotelForm, city: e.target.value })} required />
                 </div>
                 <div className="form-group">
-                  <label>State</label>
-                  <input className="form-control" value={hotelForm.state} onChange={(e) => setHotelForm({ ...hotelForm, state: e.target.value })} />
+                  <label htmlFor="admin-hotel-state">State</label>
+                  <input id="admin-hotel-state" name="state" className="form-control" value={hotelForm.state} onChange={(e) => setHotelForm({ ...hotelForm, state: e.target.value })} />
                 </div>
                 <div className="form-group">
-                  <label>Address</label>
-                  <input className="form-control" value={hotelForm.address} onChange={(e) => setHotelForm({ ...hotelForm, address: e.target.value })} />
+                  <label htmlFor="admin-hotel-address">Address</label>
+                  <input id="admin-hotel-address" name="address" className="form-control" value={hotelForm.address} onChange={(e) => setHotelForm({ ...hotelForm, address: e.target.value })} />
                 </div>
                 <div className="form-group">
-                  <label>Starting Price (₹)</label>
-                  <input type="number" className="form-control" value={hotelForm.startingPrice} onChange={(e) => setHotelForm({ ...hotelForm, startingPrice: e.target.value })} required />
+                  <label htmlFor="admin-hotel-price">Starting Price (₹)</label>
+                  <input id="admin-hotel-price" name="startingPrice" type="number" className="form-control" value={hotelForm.startingPrice} onChange={(e) => setHotelForm({ ...hotelForm, startingPrice: e.target.value })} required />
                 </div>
                 <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-                  <label>Description</label>
-                  <textarea rows={2} className="form-control" value={hotelForm.description} onChange={(e) => setHotelForm({ ...hotelForm, description: e.target.value })} required />
+                  <label htmlFor="admin-hotel-desc">Description</label>
+                  <textarea id="admin-hotel-desc" name="description" rows={2} className="form-control" value={hotelForm.description} onChange={(e) => setHotelForm({ ...hotelForm, description: e.target.value })} required />
                 </div>
                 <div style={{ gridColumn: '1 / -1', display: 'flex', gap: '1rem', alignItems: 'center' }}>
                   <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
@@ -407,8 +476,9 @@ export default function AdminDashboard() {
             
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
               <div className="form-group">
-                <label>Parent Hotel Sanctuary</label>
+                <label htmlFor="admin-room-hotel">Parent Hotel Sanctuary</label>
                 <select
+                  id="admin-room-hotel"
                   name="hotelId"
                   className="form-control"
                   value={form.hotelId}
@@ -422,8 +492,9 @@ export default function AdminDashboard() {
               </div>
 
               <div className="form-group">
-                <label>Room Number / Code</label>
+                <label htmlFor="admin-room-number">Room Number / Code</label>
                 <input
+                  id="admin-room-number"
                   name="roomNumber"
                   className="form-control"
                   placeholder="e.g. 104"
@@ -434,8 +505,8 @@ export default function AdminDashboard() {
               </div>
 
               <div className="form-group">
-                <label>Accommodation Category</label>
-                <select name="roomType" className="form-control" value={form.roomType} onChange={handleChange}>
+                <label htmlFor="admin-room-type">Accommodation Category</label>
+                <select id="admin-room-type" name="roomType" className="form-control" value={form.roomType} onChange={handleChange}>
                   <option value="DELUXE">DELUXE</option>
                   <option value="SUITE">SUITE</option>
                   <option value="VILLA">VILLA</option>
@@ -446,8 +517,9 @@ export default function AdminDashboard() {
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <div className="form-group">
-                  <label>Price / Night (₹)</label>
+                  <label htmlFor="admin-room-price">Price / Night (₹)</label>
                   <input
+                    id="admin-room-price"
                     type="number"
                     name="pricePerNight"
                     className="form-control"
@@ -458,8 +530,9 @@ export default function AdminDashboard() {
                   />
                 </div>
                 <div className="form-group">
-                  <label>Guest Capacity</label>
+                  <label htmlFor="admin-room-capacity">Guest Capacity</label>
                   <input
+                    id="admin-room-capacity"
                     type="number"
                     name="capacity"
                     className="form-control"
@@ -473,8 +546,9 @@ export default function AdminDashboard() {
               </div>
 
               <div className="form-group">
-                <label>Image URL</label>
+                <label htmlFor="admin-room-image">Image URL</label>
                 <input
+                  id="admin-room-image"
                   name="imageUrl"
                   className="form-control"
                   placeholder="https://..."
@@ -484,8 +558,9 @@ export default function AdminDashboard() {
               </div>
 
               <div className="form-group">
-                <label>Amenities (Comma-separated)</label>
+                <label htmlFor="admin-room-amenities">Amenities (Comma-separated)</label>
                 <input
+                  id="admin-room-amenities"
                   name="amenities"
                   className="form-control"
                   placeholder="Wi-Fi, Balcony, Tub"
@@ -495,8 +570,9 @@ export default function AdminDashboard() {
               </div>
 
               <div className="form-group">
-                <label>Description</label>
+                <label htmlFor="admin-room-desc">Description</label>
                 <textarea
+                  id="admin-room-desc"
                   name="description"
                   className="form-control"
                   rows={3}
@@ -617,16 +693,29 @@ export default function AdminDashboard() {
       {/* TAB: USERS */}
       {tab === 'users' && (
         <div className="table-container">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', borderBottom: '1px solid var(--outline-variant)' }}>
-            <h3 style={{ margin: 0 }}>Registered Users</h3>
-            <button className="btn btn-primary btn-pill" onClick={() => setShowAdminForm(!showAdminForm)}>
-              {showAdminForm ? 'Cancel' : '+ Invite New Admin'}
-            </button>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.25rem', borderBottom: '1px solid var(--outline-variant)', flexWrap: 'wrap', gap: '1rem' }}>
+            <div>
+              <h3 style={{ margin: 0 }}>Registered Users & Role Governance</h3>
+              {!isOwner ? (
+                <p style={{ margin: '0.35rem 0 0', fontSize: '0.85rem', color: 'var(--error)', fontWeight: 500 }}>
+                  🔒 Role promotion and demotion is restricted to the <strong>Owner / Super Admin</strong>.
+                </p>
+              ) : (
+                <p style={{ margin: '0.35rem 0 0', fontSize: '0.85rem', color: 'var(--on-surface-variant)' }}>
+                  👑 You are logged in as the <strong>Owner / Super Admin</strong>. You have exclusive authority to promote or demote administrators.
+                </p>
+              )}
+            </div>
+            {isOwner && (
+              <button className="btn btn-primary btn-pill" onClick={() => setShowAdminForm(!showAdminForm)}>
+                {showAdminForm ? 'Cancel' : '+ Invite New Admin'}
+              </button>
+            )}
           </div>
 
-          {showAdminForm && (
+          {showAdminForm && isOwner && (
             <div style={{ padding: '1.5rem', background: 'var(--surface-container)', borderBottom: '1px solid var(--outline-variant)' }}>
-              <h4 style={{ marginTop: 0, marginBottom: '1rem' }}>Create Admin Account</h4>
+              <h4 style={{ marginTop: 0, marginBottom: '1rem' }}>Create New Admin Account</h4>
               <form onSubmit={handleAdminSubmit} style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem' }}>
                 <div className="form-group" style={{ flex: '1 1 200px' }}>
                   <label>Full Name</label>
@@ -645,7 +734,7 @@ export default function AdminDashboard() {
                   <input name="phone" className="form-control" value={adminForm.phone} onChange={handleAdminFormChange} />
                 </div>
                 <div style={{ flex: '1 1 100%', marginTop: '0.5rem' }}>
-                  <button type="submit" className="btn btn-primary btn-pill">Create Account</button>
+                  <button type="submit" className="btn btn-primary btn-pill">Create Admin Account</button>
                 </div>
               </form>
             </div>
@@ -658,33 +747,228 @@ export default function AdminDashboard() {
                 <th>Email</th>
                 <th>Phone</th>
                 <th>Role</th>
-                <th>Actions</th>
+                <th>Governance Actions</th>
               </tr>
             </thead>
             <tbody>
-              {users.map((u) => (
-                <tr key={u.id}>
-                  <td><strong>{u.name}</strong></td>
-                  <td>{u.email}</td>
-                  <td>{u.phone || '—'}</td>
-                  <td>
-                    <span className={`status-pill ${u.role === 'ADMIN' ? 'status-confirmed' : 'status-cancelled'}`} style={u.role === 'USER' ? { background: 'var(--surface-container-high)', color: 'var(--on-surface)', borderColor: 'var(--outline-variant)' } : {}}>
-                      {u.role}
-                    </span>
-                  </td>
-                  <td>
-                    <button
-                      onClick={() => handleRoleToggle(u.id, u.role)}
-                      className={`btn btn-pill ${u.role === 'ADMIN' ? 'btn-secondary' : 'btn-outline'}`}
-                      style={{ padding: '0.25rem 0.75rem', fontSize: '0.78rem' }}
-                    >
-                      {u.role === 'ADMIN' ? 'Demote to User' : 'Promote to Admin'}
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              {users.map((u) => {
+                const userIsOwner = u.isOwner || u.email === 'admin@gmail.com' || u.role === 'OWNER' || u.role === 'SUPER_ADMIN'
+
+                return (
+                  <tr key={u.id}>
+                    <td><strong>{u.name}</strong></td>
+                    <td>{u.email}</td>
+                    <td>{u.phone || '—'}</td>
+                    <td>
+                      {userIsOwner ? (
+                        <span className="status-pill status-owner">
+                          👑 OWNER / SUPER ADMIN
+                        </span>
+                      ) : (
+                        <span
+                          className={`status-pill ${u.role === 'ADMIN' ? 'status-confirmed' : 'status-cancelled'}`}
+                          style={u.role === 'USER' ? { background: 'var(--surface-container-high)', color: 'var(--on-surface)', borderColor: 'var(--outline-variant)' } : {}}
+                        >
+                          {u.role}
+                        </span>
+                      )}
+                    </td>
+                    <td>
+                      {userIsOwner ? (
+                        <span style={{ fontSize: '0.82rem', color: 'var(--on-surface-variant)', fontStyle: 'italic' }}>
+                          Primary System Owner
+                        </span>
+                      ) : isOwner ? (
+                        <button
+                          onClick={() => handleRoleToggle(u.id, u.role)}
+                          className={`btn btn-pill ${u.role === 'ADMIN' ? 'btn-secondary' : 'btn-outline'}`}
+                          style={{ padding: '0.25rem 0.75rem', fontSize: '0.78rem' }}
+                        >
+                          {u.role === 'ADMIN' ? 'Demote to User' : 'Promote to Admin'}
+                        </button>
+                      ) : (
+                        <span
+                          style={{
+                            fontSize: '0.78rem',
+                            color: 'var(--on-surface-variant)',
+                            background: 'var(--surface-container-high)',
+                            padding: '0.25rem 0.6rem',
+                            borderRadius: 'var(--radius-sm)',
+                            display: 'inline-block'
+                          }}
+                          title="Only Owner / Super Admin can change user roles"
+                        >
+                          🔒 Owner Permission Required
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* TAB: ADMIN AUDIT LOGS */}
+      {tab === 'logs' && (
+        <div style={{ background: 'var(--surface-container-lowest)', border: '1px solid var(--outline-variant)', borderRadius: 'var(--radius-lg)', padding: '1.75rem', boxShadow: 'var(--shadow-soft)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '1rem' }}>
+            <div>
+              <h3 style={{ margin: 0, fontSize: '1.4rem' }}>Admin Operational Audit Logs</h3>
+              <p style={{ margin: '0.25rem 0 0', color: 'var(--on-surface-variant)', fontSize: '0.9rem' }}>
+                Complete verifiable audit trail of all operational changes performed by administrators across rooms, hotels, reservations, and credentials.
+              </p>
+            </div>
+            <button
+              onClick={loadLogs}
+              className="btn btn-secondary btn-pill"
+              disabled={logsLoading}
+              style={{ fontSize: '0.82rem', padding: '0.45rem 1rem' }}
+            >
+              {logsLoading ? 'Refreshing...' : '🔄 Refresh Logs'}
+            </button>
+          </div>
+
+          {/* Filter Bar */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.5rem', padding: '1rem', background: 'var(--surface-container-low)', borderRadius: 'var(--radius-md)', border: '1px solid var(--outline-variant)' }}>
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+              <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--on-surface-variant)', textTransform: 'uppercase', marginRight: '0.25rem' }}>View:</span>
+              <button
+                className={`btn btn-pill ${logFilter === 'other' ? 'btn-primary' : 'btn-secondary'}`}
+                onClick={() => setLogFilter('other')}
+                style={{ padding: '0.35rem 0.9rem', fontSize: '0.82rem' }}
+                id="btn-filter-other-admins"
+              >
+                👥 Other Admins' Actions
+              </button>
+              <button
+                className={`btn btn-pill ${logFilter === 'all' ? 'btn-primary' : 'btn-secondary'}`}
+                onClick={() => setLogFilter('all')}
+                style={{ padding: '0.35rem 0.9rem', fontSize: '0.82rem' }}
+                id="btn-filter-all-logs"
+              >
+                📋 All Admin Activity
+              </button>
+            </div>
+
+            <div style={{ minWidth: '260px' }}>
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Search by admin name, email, action..."
+                value={logSearch}
+                onChange={(e) => setLogSearch(e.target.value)}
+                style={{ padding: '0.45rem 0.85rem', fontSize: '0.85rem' }}
+              />
+            </div>
+          </div>
+
+          {/* Filtered Logs Rendering */}
+          {(() => {
+            const currentEmail = currentUser?.email?.toLowerCase() || ''
+            const filteredLogs = logs.filter((l) => {
+              // 1. Other Admins filter
+              if (logFilter === 'other' && currentEmail) {
+                if (l.adminEmail && l.adminEmail.toLowerCase() === currentEmail) {
+                  return false
+                }
+              }
+              // 2. Search query filter
+              if (logSearch.trim()) {
+                const query = logSearch.toLowerCase()
+                const matchAdmin = (l.adminName && l.adminName.toLowerCase().includes(query)) ||
+                                   (l.adminEmail && l.adminEmail.toLowerCase().includes(query))
+                const matchAction = l.action && l.action.toLowerCase().includes(query)
+                const matchDetails = l.details && l.details.toLowerCase().includes(query)
+                const matchEntity = l.entityType && l.entityType.toLowerCase().includes(query)
+                return matchAdmin || matchAction || matchDetails || matchEntity
+              }
+              return true
+            })
+
+            if (filteredLogs.length === 0) {
+              return (
+                <div style={{ textAlign: 'center', padding: '3.5rem 1.5rem', color: 'var(--on-surface-variant)' }}>
+                  <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>📭</div>
+                  <h4 style={{ margin: '0 0 0.5rem' }}>No activity logs found</h4>
+                  <p style={{ margin: 0, fontSize: '0.9rem' }}>
+                    {logFilter === 'other'
+                      ? 'No operational actions by other administrators recorded yet.'
+                      : 'No admin activities recorded in the system yet.'}
+                  </p>
+                </div>
+              )
+            }
+
+            return (
+              <div className="table-container">
+                <table className="custom-table">
+                  <thead>
+                    <tr>
+                      <th style={{ width: '170px' }}>Timestamp</th>
+                      <th style={{ width: '220px' }}>Administrator</th>
+                      <th style={{ width: '160px' }}>Action</th>
+                      <th style={{ width: '110px' }}>Entity</th>
+                      <th>Operational Details</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredLogs.map((log) => {
+                      let actionClass = 'status-confirmed'
+                      if (log.action?.includes('DELETE') || log.action?.includes('DEMOTE')) {
+                        actionClass = 'status-cancelled'
+                      } else if (log.action?.includes('UPDATE') || log.action?.includes('CANCEL')) {
+                        actionClass = 'status-pending'
+                      }
+
+                      const date = log.timestamp ? new Date(log.timestamp) : null
+                      const formattedTime = date
+                        ? date.toLocaleString('en-IN', {
+                            dateStyle: 'medium',
+                            timeStyle: 'short',
+                          })
+                        : '—'
+
+                      const isSelf = currentEmail && log.adminEmail?.toLowerCase() === currentEmail
+
+                      return (
+                        <tr key={log.id || Math.random()}>
+                          <td style={{ fontSize: '0.82rem', whiteSpace: 'nowrap', color: 'var(--on-surface-variant)' }}>
+                            {formattedTime}
+                          </td>
+                          <td>
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                              <strong>
+                                {log.adminName || 'Admin'}{' '}
+                                {isSelf && <span style={{ fontSize: '0.7rem', color: 'var(--primary)', fontWeight: 600 }}>(You)</span>}
+                              </strong>
+                              <span style={{ fontSize: '0.78rem', color: 'var(--on-surface-variant)' }}>
+                                {log.adminEmail}
+                              </span>
+                            </div>
+                          </td>
+                          <td>
+                            <span className={`status-pill ${actionClass}`} style={{ fontSize: '0.72rem', letterSpacing: '0.04em' }}>
+                              {log.action}
+                            </span>
+                          </td>
+                          <td>
+                            <span className="amenity-pill" style={{ fontSize: '0.75rem' }}>
+                              {log.entityType || 'SYSTEM'}
+                            </span>
+                          </td>
+                          <td style={{ fontSize: '0.88rem', color: 'var(--on-surface)' }}>
+                            {log.details}
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )
+          })()}
         </div>
       )}
     </div>

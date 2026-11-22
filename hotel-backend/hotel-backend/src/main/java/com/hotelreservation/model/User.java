@@ -23,6 +23,17 @@ public class User {
     private String resetToken;
     private java.time.LocalDateTime resetTokenExpiry;
 
+    public boolean isOwnerOrSuperAdmin() {
+        return "OWNER".equalsIgnoreCase(this.role)
+                || "SUPER_ADMIN".equalsIgnoreCase(this.role)
+                || "Owner".equalsIgnoreCase(this.role)
+                || "admin@gmail.com".equalsIgnoreCase(this.email);
+    }
+
+    public boolean isAdminOrOwner() {
+        return isOwnerOrSuperAdmin() || "ADMIN".equalsIgnoreCase(this.role);
+    }
+
     @Data
     @NoArgsConstructor
     @AllArgsConstructor

@@ -21,10 +21,11 @@ export function AuthProvider({ children }) {
     setUser(null)
   }
 
-  const isAdmin = user?.role === 'ADMIN'
+  const isOwner = user?.role === 'OWNER' || user?.role === 'Owner' || user?.role === 'SUPER_ADMIN' || user?.email === 'admin@gmail.com'
+  const isAdmin = user?.role === 'ADMIN' || isOwner
 
   return (
-    <AuthContext.Provider value={{ user, loginUser, logout, isAdmin }}>
+    <AuthContext.Provider value={{ user, loginUser, logout, isAdmin, isOwner }}>
       {children}
     </AuthContext.Provider>
   )

@@ -1,7 +1,7 @@
 import axios from 'axios'
 
-// Centralized API configuration: VITE_API_BASE_URL with http://localhost:8082 fallback
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8082'
+// Centralized API configuration: VITE_API_BASE_URL with live Cloudflare tunnel fallback
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://impose-roommate-dragon-cabinets.trycloudflare.com'
 
 const api = axios.create({
   baseURL: BASE_URL,
@@ -19,6 +19,7 @@ api.interceptors.request.use((config) => {
 // --- Auth ---
 export const signup = (data) => api.post('/api/auth/signup', data)
 export const login = (data) => api.post('/api/auth/login', data)
+export const googleLogin = (data) => api.post('/api/auth/google', data)
 export const forgotPassword = (data) => api.post('/api/auth/forgot-password', data)
 export const resetPassword = (data) => api.post('/api/auth/reset-password', data)
 
@@ -56,9 +57,10 @@ export const getReviewsForRoom = (roomId) => api.get(`/api/reviews/room/${roomId
 export const createReview = (data) => api.post('/api/reviews', data)
 export const deleteReview = (id) => api.delete(`/api/reviews/${id}`)
 
-// --- Admin Users ---
+// --- Admin Users & Audit Logs ---
 export const getAllUsers = () => api.get('/api/admin/users')
 export const updateUserRole = (id, data) => api.put(`/api/admin/users/${id}/role`, data)
 export const createAdminUser = (data) => api.post('/api/admin/users', data)
+export const getAdminLogs = () => api.get('/api/admin/logs')
 
 export default api

@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import Navbar from './components/Navbar.jsx'
 import Footer from './components/Footer.jsx'
 import { PrivateRoute, AdminRoute } from './components/PrivateRoute.jsx'
@@ -20,6 +20,8 @@ export default function App() {
       <div style={{ flex: 1 }}>
         <Routes>
           <Route path="/" element={<Home />} />
+          {/* /hotels is the same as home — hotel listing lives on the home page */}
+          <Route path="/hotels" element={<Navigate to="/" replace />} />
           <Route path="/hotels/:id" element={<HotelDetail />} />
           <Route path="/rooms" element={<Rooms />} />
           <Route path="/rooms/:id" element={<RoomDetail />} />

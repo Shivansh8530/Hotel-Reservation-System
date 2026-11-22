@@ -37,4 +37,9 @@ public class AuthController {
         authService.resetPassword(request);
         return ResponseEntity.ok(java.util.Map.of("message", "Password successfully reset"));
     }
+
+    @PostMapping("/google")
+    public ResponseEntity<AuthResponse> googleLogin(@RequestBody com.hotelreservation.dto.GoogleAuthRequest request) {
+        return ResponseEntity.ok(authService.googleLogin(request));
+    }
 }
