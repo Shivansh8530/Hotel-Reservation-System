@@ -1,10 +1,17 @@
 import axios from 'axios'
 
-// Centralized API configuration: VITE_API_BASE_URL with live Cloudflare tunnel fallback
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://patient-subscriber-freelance-verification.trycloudflare.com'
+// Centralized API configuration:
+// Automatically uses http://localhost:8082 when browsing on localhost,
+// and the active Cloudflare tunnel when browsing on production Firebase hosting.
+const getBaseUrl = () => {
+  if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+    return 'http://localhost:8082'
+  }
+  return import.meta.env.VITE_API_BASE_URL || 'https://patient-subscriber-freelance-verification.trycloudflare.com'
+}
 
 const api = axios.create({
-  baseURL: BASE_URL,
+  baseURL: getBaseUrl(),
 })
 
 // Attach the JWT token (if we have one) to every outgoing request.

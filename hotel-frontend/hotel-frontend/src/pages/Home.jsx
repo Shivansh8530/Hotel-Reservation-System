@@ -34,7 +34,7 @@ export default function Home() {
         setHotels(searchRes.data || [])
       }
     } catch (err) {
-      setError('Unable to load hotels. Please ensure the backend server is running at http://localhost:8082.')
+      setError(err.response?.data?.message || 'Unable to load hotels. Please check your network connection and ensure the backend server is reachable.')
       setHotels([])
     } finally {
       setLoading(false)
