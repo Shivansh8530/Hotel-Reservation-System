@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 // Centralized API configuration: VITE_API_BASE_URL with live Cloudflare tunnel fallback
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://impose-roommate-dragon-cabinets.trycloudflare.com'
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://patient-subscriber-freelance-verification.trycloudflare.com'
 
 const api = axios.create({
   baseURL: BASE_URL,
@@ -51,6 +51,7 @@ export const createBooking = (data) => api.post('/api/bookings', data)
 export const getMyBookings = () => api.get('/api/bookings/me')
 export const getAllBookings = () => api.get('/api/bookings/all')
 export const cancelBooking = (id) => api.put(`/api/bookings/${id}/cancel`)
+export const rescheduleBooking = (id, data) => api.put(`/api/bookings/${id}/reschedule`, data)
 
 // --- Reviews ---
 export const getReviewsForRoom = (roomId) => api.get(`/api/reviews/room/${roomId}`)

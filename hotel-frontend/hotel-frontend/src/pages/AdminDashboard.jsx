@@ -11,7 +11,8 @@ import {
   getHotels,
   createHotel,
   deleteHotel,
-  getAdminLogs
+  getAdminLogs,
+  rescheduleBooking
 } from '../services/api.js'
 import { useAuth } from '../context/AuthContext.jsx'
 import { formatINR } from '../utils/currency.js'
@@ -63,6 +64,45 @@ export default function AdminDashboard() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
+
+  const [reschedulingBooking, setReschedulingBooking] = useState(null)
+  const [rescheduleDates, setRescheduleDates] = useState({ checkIn: '', checkOut: '' })
+  const [rescheduleLoading, setRescheduleLoading] = useState(false)
+
+  const handleOpenReschedule = (booking) => {
+    setReschedulingBooking(booking)
+    setRescheduleDates({ checkIn: booking.checkIn || '', checkOut: booking.checkOut || '' })
+    setError('')
+    setSuccess('')
+  }
+
+  const handleRescheduleSubmit = async (e) => {
+    e.preventDefault()
+    if (!reschedulingBooking) return
+    if (!rescheduleDates.checkIn || !rescheduleDates.checkOut) {
+      setError('Please choose both check-in and check-out dates.')
+      return
+    }
+    if (rescheduleDates.checkOut <= rescheduleDates.checkIn) {
+      setError('Check-out date must be strictly after check-in date.')
+      return
+    }
+
+    setRescheduleLoading(true)
+    setError('')
+    try {
+      const res = await rescheduleBooking(reschedulingBooking.id, rescheduleDates)
+      const updated = res.data
+      setBookings((prev) => prev.map((b) => (b.id === updated.id ? { ...b, ...updated } : b)))
+      setSuccess(`Booking ${reschedulingBooking.id} rescheduled to ${updated.checkIn} - ${updated.checkOut}.`)
+      setReschedulingBooking(null)
+      loadLogs()
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to reschedule booking.')
+    } finally {
+      setRescheduleLoading(false)
+    }
+  }
 
   const loadLogs = async () => {
     setLogsLoading(true)
@@ -667,6 +707,7 @@ export default function AdminDashboard() {
                 <th>Check-Out</th>
                 <th>Total Price</th>
                 <th>Status</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -683,10 +724,76 @@ export default function AdminDashboard() {
                       {b.status}
                     </span>
                   </td>
+                  <td>
+                    {b.status === 'CONFIRMED' && (
+                      <button
+                        onClick={() => handleOpenReschedule(b)}
+                        className="btn btn-secondary btn-pill"
+                        style={{ padding: '0.25rem 0.65rem', fontSize: '0.78rem' }}
+                      >
+                        Reschedule
+                      </button>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
+
+          {/* Reschedule Modal in AdminDashboard */}
+          {reschedulingBooking && (
+            <div className="modal-overlay" onClick={() => setReschedulingBooking(null)} role="dialog" aria-modal="true">
+              <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '520px' }}>
+                <div className="modal-header">
+                  <div>
+                    <h3 style={{ margin: 0 }}>Reschedule Booking</h3>
+                    <span style={{ fontSize: '0.82rem', color: 'var(--on-surface-variant)', fontFamily: 'monospace' }}>
+                      REF: {reschedulingBooking.id}
+                    </span>
+                  </div>
+                  <button className="close-btn" onClick={() => setReschedulingBooking(null)} aria-label="Close modal">&times;</button>
+                </div>
+                <div style={{ background: 'var(--surface-container)', padding: '0.85rem 1rem', borderRadius: 'var(--radius-md)', marginBottom: '1.25rem', fontSize: '0.85rem' }}>
+                  <div>Room ID: <strong>{reschedulingBooking.roomId}</strong></div>
+                  <div>Current Stay: <strong>{reschedulingBooking.checkIn}</strong> to <strong>{reschedulingBooking.checkOut}</strong> ({formatINR(reschedulingBooking.totalPrice)})</div>
+                </div>
+                <form onSubmit={handleRescheduleSubmit}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.25rem' }}>
+                    <div className="form-group">
+                      <label htmlFor="admin-reschedule-in">New Check-In</label>
+                      <input
+                        id="admin-reschedule-in"
+                        type="date"
+                        className="form-control"
+                        value={rescheduleDates.checkIn}
+                        onChange={(e) => setRescheduleDates({ ...rescheduleDates, checkIn: e.target.value })}
+                        required
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="admin-reschedule-out">New Check-Out</label>
+                      <input
+                        id="admin-reschedule-out"
+                        type="date"
+                        className="form-control"
+                        value={rescheduleDates.checkOut}
+                        onChange={(e) => setRescheduleDates({ ...rescheduleDates, checkOut: e.target.value })}
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
+                    <button type="button" className="btn btn-secondary btn-pill" onClick={() => setReschedulingBooking(null)} disabled={rescheduleLoading}>
+                      Cancel
+                    </button>
+                    <button type="submit" className="btn btn-primary btn-pill" disabled={rescheduleLoading}>
+                      {rescheduleLoading ? 'Saving...' : 'Confirm Reschedule'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
