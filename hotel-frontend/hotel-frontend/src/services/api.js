@@ -2,12 +2,12 @@ import axios from 'axios'
 
 // Centralized API configuration:
 // Automatically uses http://localhost:8082 when browsing on localhost,
-// and the active Cloudflare tunnel when browsing on production Firebase hosting.
+// and the permanent Render backend when browsing on production Firebase hosting.
 const getBaseUrl = () => {
   if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
     return 'http://localhost:8082'
   }
-  return import.meta.env.VITE_API_BASE_URL || 'https://patient-subscriber-freelance-verification.trycloudflare.com'
+  return import.meta.env.VITE_API_BASE_URL || 'https://hotel-reservation-system-p4u6.onrender.com'
 }
 
 const api = axios.create({
