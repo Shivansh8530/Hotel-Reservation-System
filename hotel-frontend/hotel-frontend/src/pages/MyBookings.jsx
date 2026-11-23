@@ -145,10 +145,10 @@ export default function MyBookings() {
   })
 
   return (
-    <div className="container" style={{ padding: '3rem 1.5rem 5rem' }}>
-      <div style={{ marginBottom: '2.5rem' }}>
-        <h1 style={{ fontSize: '2.25rem', marginBottom: '0.4rem' }}>My Reservations</h1>
-        <p style={{ color: 'var(--on-surface-variant)', fontSize: '1rem' }}>
+    <div className="container reservations-page">
+      <div style={{ marginBottom: '2rem' }}>
+        <h1 className="reservations-title">My Reservations</h1>
+        <p className="reservations-subtitle">
           Manage your bespoke stays, upcoming sanctuary bookings, and reservation archives.
         </p>
       </div>
@@ -167,7 +167,7 @@ export default function MyBookings() {
       )}
 
       {/* Tabs */}
-      <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '2rem', borderBottom: '1px solid var(--outline-variant)', paddingBottom: '1rem' }}>
+      <div className="reservation-tabs">
         {[
           { key: 'UPCOMING', label: 'Upcoming Stays' },
           { key: 'COMPLETED', label: 'Completed' },
@@ -176,15 +176,11 @@ export default function MyBookings() {
         ].map((tab) => (
           <button
             key={tab.key}
-            className="btn btn-pill"
+            className={`btn btn-pill reservation-tab-btn ${activeTab === tab.key ? 'active' : ''}`}
             onClick={() => setActiveTab(tab.key)}
             style={{
-              padding: '0.45rem 1.25rem',
-              fontSize: '0.88rem',
               background: activeTab === tab.key ? 'var(--primary)' : 'var(--surface-container)',
-              color: activeTab === tab.key ? 'white' : 'var(--on-surface-variant)',
-              border: 'none',
-              cursor: 'pointer'
+              color: activeTab === tab.key ? 'white' : 'var(--on-surface-variant)'
             }}
           >
             {tab.label}
@@ -214,80 +210,67 @@ export default function MyBookings() {
             const roomName = booking.roomTitle || (room ? `${room.roomType} Suite - Room ${room.roomNumber}` : `Sanctuary Room (${booking.roomId})`)
 
             return (
-              <div
-                key={booking.id}
-                style={{
-                  background: 'var(--surface-container-lowest)',
-                  border: '1px solid var(--outline-variant)',
-                  borderRadius: 'var(--radius-lg)',
-                  padding: '1.75rem',
-                  boxShadow: 'var(--shadow-soft)',
-                  display: 'grid',
-                  gridTemplateColumns: '1fr auto',
-                  gap: '1.5rem',
-                  alignItems: 'center'
-                }}
-              >
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.75rem' }}>
+              <div key={booking.id} className="booking-card">
+                <div className="booking-card-main">
+                  <div className="booking-card-header">
                     <span className={`status-pill ${booking.status === 'CANCELLED' ? 'status-cancelled' : 'status-confirmed'}`}>
                       {booking.status}
                     </span>
-                    <span style={{ fontSize: '0.82rem', color: 'var(--on-surface-variant)', fontFamily: 'monospace' }}>
+                    <span className="booking-ref">
                       REF: {booking.id}
                     </span>
                   </div>
 
-                  <h3 style={{ fontSize: '1.4rem', marginBottom: '0.4rem' }}>{roomName}</h3>
+                  <h3 className="booking-card-title">{roomName}</h3>
                   
-                  <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap', color: 'var(--on-surface-variant)', fontSize: '0.9rem', marginTop: '1rem' }}>
+                  <div className="booking-card-meta">
                     <div>
-                      <strong style={{ color: 'var(--on-surface)' }}>Check-In:</strong> {booking.checkIn}
+                      <strong>Check-In:</strong> {booking.checkIn}
                     </div>
                     <div>
-                      <strong style={{ color: 'var(--on-surface)' }}>Check-Out:</strong> {booking.checkOut}
+                      <strong>Check-Out:</strong> {booking.checkOut}
                     </div>
                     {booking.createdAt && (
                       <div>
-                        <strong style={{ color: 'var(--on-surface)' }}>Booked On:</strong> {new Date(booking.createdAt).toLocaleDateString()}
+                        <strong>Booked On:</strong> {new Date(booking.createdAt).toLocaleDateString()}
                       </div>
                     )}
                   </div>
                 </div>
 
-                <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'flex-end' }}>
-                  <div>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--on-surface-variant)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total Amount</div>
-                    <div style={{ fontSize: '1.6rem', fontWeight: '700', color: 'var(--primary)' }}>
+                <div className="booking-card-actions">
+                  <div className="booking-card-price-block">
+                    <div className="booking-card-price-label">Total Amount</div>
+                    <div className="booking-card-price-val">
                       {formatINR(booking.totalPrice)}
                     </div>
                   </div>
 
                   {booking.status === 'CONFIRMED' && (
-                    <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                    <div className="booking-action-buttons">
                       <button
                         onClick={() => handleOpenReschedule(booking)}
-                        className="btn btn-primary btn-pill"
-                        style={{ padding: '0.4rem 1rem', fontSize: '0.82rem' }}
+                        className="btn btn-primary btn-pill booking-btn"
                       >
                         Reschedule
                       </button>
 
                       {cancellingId === booking.id ? (
-                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                          <span style={{ fontSize: '0.82rem', color: 'var(--error)' }}>Cancel stay?</span>
-                          <button onClick={confirmCancel} className="btn btn-danger btn-pill" style={{ padding: '0.35rem 0.85rem', fontSize: '0.8rem' }}>
-                            Yes, Cancel
-                          </button>
-                          <button onClick={() => setCancellingId(null)} className="btn btn-secondary btn-pill" style={{ padding: '0.35rem 0.85rem', fontSize: '0.8rem' }}>
-                            Keep
-                          </button>
+                        <div className="booking-cancel-confirm">
+                          <span className="booking-cancel-text">Cancel stay?</span>
+                          <div className="booking-cancel-actions">
+                            <button onClick={confirmCancel} className="btn btn-danger btn-pill booking-btn-sm">
+                              Yes, Cancel
+                            </button>
+                            <button onClick={() => setCancellingId(null)} className="btn btn-secondary btn-pill booking-btn-sm">
+                              Keep
+                            </button>
+                          </div>
                         </div>
                       ) : (
                         <button
                           onClick={() => handleCancelClick(booking.id)}
-                          className="btn btn-outline btn-pill"
-                          style={{ padding: '0.4rem 1rem', fontSize: '0.82rem' }}
+                          className="btn btn-outline btn-pill booking-btn"
                         >
                           Cancel Reservation
                         </button>
@@ -304,11 +287,11 @@ export default function MyBookings() {
       {/* Reschedule Modal */}
       {reschedulingBooking && (
         <div className="modal-overlay" onClick={handleCloseReschedule} role="dialog" aria-modal="true" aria-labelledby="reschedule-dialog-title">
-          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '520px' }}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '520px', width: '100%', boxSizing: 'border-box' }}>
             <div className="modal-header">
               <div>
                 <h3 id="reschedule-dialog-title" style={{ margin: 0, fontSize: '1.4rem' }}>Reschedule Reservation</h3>
-                <span style={{ fontSize: '0.82rem', color: 'var(--on-surface-variant)', fontFamily: 'monospace' }}>
+                <span className="booking-ref">
                   REF: {reschedulingBooking.id}
                 </span>
               </div>
@@ -323,7 +306,7 @@ export default function MyBookings() {
               </div>
             )}
 
-            <div style={{ background: 'var(--surface-container)', padding: '1rem', borderRadius: 'var(--radius-md)', marginBottom: '1.25rem', fontSize: '0.88rem' }}>
+            <div style={{ background: 'var(--surface-container)', padding: '1rem', borderRadius: 'var(--radius-md)', marginBottom: '1.25rem', fontSize: '0.88rem', overflowWrap: 'break-word' }}>
               <div style={{ fontWeight: '600', marginBottom: '0.3rem' }}>
                 {reschedulingBooking.roomTitle || (rooms[reschedulingBooking.roomId] ? `${rooms[reschedulingBooking.roomId].roomType} Suite - Room ${rooms[reschedulingBooking.roomId].roomNumber}` : 'Room')}
               </div>
@@ -333,7 +316,7 @@ export default function MyBookings() {
             </div>
 
             <form onSubmit={handleRescheduleSubmit}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.25rem' }}>
+              <div className="reschedule-form-grid">
                 <div className="form-group">
                   <label htmlFor="reschedule-checkin" style={{ fontSize: '0.85rem', fontWeight: '500', marginBottom: '0.35rem', display: 'block' }}>
                     New Check-In
@@ -365,7 +348,7 @@ export default function MyBookings() {
               </div>
 
               {estimatedNights > 0 && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.85rem 1rem', background: 'var(--surface-container-high)', borderRadius: 'var(--radius-md)', marginBottom: '1.5rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.85rem 1rem', background: 'var(--surface-container-high)', borderRadius: 'var(--radius-md)', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '0.5rem' }}>
                   <div>
                     <span style={{ fontSize: '0.85rem', color: 'var(--on-surface-variant)' }}>New Duration:</span>
                     <strong style={{ marginLeft: '0.4rem', fontSize: '0.9rem' }}>{estimatedNights} {estimatedNights === 1 ? 'Night' : 'Nights'}</strong>
@@ -379,7 +362,7 @@ export default function MyBookings() {
                 </div>
               )}
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.5rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.5rem', flexWrap: 'wrap' }}>
                 <button
                   type="button"
                   className="btn btn-secondary btn-pill"
