@@ -171,7 +171,7 @@ export default function Login() {
               </button>
             </div>
             <div style={{ textAlign: 'right', marginTop: '0.5rem' }}>
-              <Link to="/forgot-password" style={{ fontSize: '0.85rem', color: 'var(--primary)', textDecoration: 'none' }}>
+              <Link to="/forgot-password" className="auth-helper-link" style={{ fontSize: '0.85rem', color: 'var(--primary)', textDecoration: 'none' }}>
                 Forgot Password?
               </Link>
             </div>
@@ -211,7 +211,7 @@ export default function Login() {
         </button>
 
         <p style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.9rem', color: 'var(--on-surface-variant)' }}>
-          New to StayEase? <Link to="/signup" style={{ color: 'var(--primary)', fontWeight: '600' }}>Create an Account</Link>
+          New to StayEase? <Link to="/signup" className="auth-helper-link" style={{ color: 'var(--primary)', fontWeight: '600' }}>Create an Account</Link>
         </p>
       </div>
     </div>

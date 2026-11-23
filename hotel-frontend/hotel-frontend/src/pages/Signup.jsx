@@ -389,7 +389,7 @@ export default function Signup() {
         </button>
 
         <p style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.9rem', color: 'var(--on-surface-variant)' }}>
-          Already registered? <Link to="/login" style={{ color: 'var(--primary)', fontWeight: '600' }}>Log In</Link>
+          Already registered? <Link to="/login" className="auth-helper-link" style={{ color: 'var(--primary)', fontWeight: '600' }}>Log In</Link>
         </p>
       </div>
     </div>

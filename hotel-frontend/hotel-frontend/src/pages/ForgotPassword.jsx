@@ -59,7 +59,7 @@ export default function ForgotPassword() {
         </form>
 
         <div style={{ marginTop: '1.5rem', textAlign: 'center' }}>
-          <Link to="/login" style={{ fontSize: '0.9rem', color: 'var(--primary)', fontWeight: '600' }}>
+          <Link to="/login" className="auth-helper-link" style={{ fontSize: '0.9rem', color: 'var(--primary)', fontWeight: '600' }}>
             Back to Login
           </Link>
         </div>

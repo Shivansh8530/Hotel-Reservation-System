@@ -304,7 +304,7 @@ export default function HotelDetail() {
                           <div style={{ fontSize: '0.78rem', color: 'var(--on-surface-variant)' }}>/ night</div>
                           <button
                             type="button"
-                            className={`btn btn-pill ${isSelected ? 'btn-primary' : 'btn-secondary'}`}
+                            className={`btn btn-pill room-select-btn ${isSelected ? 'btn-primary' : 'btn-secondary'}`}
                             style={{ padding: '0.3rem 0.8rem', fontSize: '0.8rem', marginTop: '0.5rem' }}
                           >
                             {isSelected ? 'Selected' : 'Select Suite'}

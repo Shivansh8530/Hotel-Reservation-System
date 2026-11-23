@@ -205,7 +205,7 @@ export default function Home() {
                 <button
                   key={p.id}
                   onClick={() => setSelectedSource(p.id)}
-                  className="btn btn-pill"
+                  className="btn btn-pill filter-chip"
                   style={{
                     padding: '0.35rem 0.9rem',
                     fontSize: 'var(--fs-xs)',
@@ -229,7 +229,7 @@ export default function Home() {
                 <button
                   key={t}
                   onClick={() => setSelectedType(t)}
-                  className="btn btn-pill"
+                  className="btn btn-pill filter-chip"
                   style={{
                     padding: '0.35rem 0.9rem',
                     fontSize: 'var(--fs-xs)',
