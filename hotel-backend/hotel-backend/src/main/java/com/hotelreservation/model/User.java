@@ -26,8 +26,7 @@ public class User {
     public boolean isOwnerOrSuperAdmin() {
         return "OWNER".equalsIgnoreCase(this.role)
                 || "SUPER_ADMIN".equalsIgnoreCase(this.role)
-                || "Owner".equalsIgnoreCase(this.role)
-                || "admin@gmail.com".equalsIgnoreCase(this.email);
+                || "Owner".equalsIgnoreCase(this.role);
     }
 
     public boolean isAdminOrOwner() {

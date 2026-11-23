@@ -6,8 +6,10 @@ import com.hotelreservation.dto.SignupRequest;
 import com.hotelreservation.exception.ApiException;
 import com.hotelreservation.model.User;
 import com.hotelreservation.repository.UserRepository;
+import com.hotelreservation.security.GoogleTokenVerifier;
 import com.hotelreservation.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,11 +17,14 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final GoogleTokenVerifier googleTokenVerifier;
+    private final EmailService emailService;
 
     public AuthResponse signup(SignupRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
@@ -47,11 +52,6 @@ public class AuthService {
             throw new BadCredentialsException("Invalid email or password");
         }
 
-        if (user.isOwnerOrSuperAdmin() && !"OWNER".equalsIgnoreCase(user.getRole()) && !"SUPER_ADMIN".equalsIgnoreCase(user.getRole())) {
-            user.setRole("OWNER");
-            user = userRepository.save(user);
-        }
-
         String token = jwtUtil.generateToken(user.getEmail(), user.getId(), user.getRole());
         return new AuthResponse(token, user.getId(), user.getName(), user.getEmail(), user.getRole());
     }
@@ -60,7 +60,7 @@ public class AuthService {
         java.util.Optional<User> userOpt = userRepository.findByEmail(request.getEmail());
         if (userOpt.isEmpty()) {
             // OWASP best practice: do not leak whether an account exists
-            System.out.println("Password reset requested for unregistered email: " + request.getEmail());
+            log.info("Password reset requested for unregistered email: {}", request.getEmail());
             return;
         }
 
@@ -68,14 +68,10 @@ public class AuthService {
         String token = java.util.UUID.randomUUID().toString();
         user.setResetToken(token);
         user.setResetTokenExpiry(java.time.LocalDateTime.now().plusMinutes(15)); // 15 mins expiry
-        
         userRepository.save(user);
 
-        // In a real application, we would send an email here with JavaMailSender
-        System.out.println("\n=======================================================");
-        System.out.println("PASSWORD RESET REQUESTED FOR: " + user.getEmail());
-        System.out.println("RESET LINK: https://hotel-resevation-8080.web.app/reset-password?token=" + token);
-        System.out.println("=======================================================\n");
+        String resetLink = "https://hotel-resevation-8080.web.app/reset-password?token=" + token;
+        emailService.sendPasswordResetEmail(user.getEmail(), resetLink);
     }
 
     public void resetPassword(com.hotelreservation.dto.ResetPasswordRequest request) {
@@ -93,28 +89,21 @@ public class AuthService {
     }
 
     public AuthResponse googleLogin(com.hotelreservation.dto.GoogleAuthRequest request) {
-        String email = request.getEmail();
-        if (email == null || email.isBlank()) {
-            throw new ApiException("Email is required for Google login", HttpStatus.BAD_REQUEST);
-        }
+        // Authenticate cryptographically using Google ID Token
+        GoogleTokenVerifier.VerifiedGoogleUser verifiedUser = googleTokenVerifier.verify(request.getIdToken());
+        String email = verifiedUser.email();
 
         User user = userRepository.findByEmail(email).orElseGet(() -> {
             User newUser = new User();
             newUser.setEmail(email);
-            String name = request.getName();
-            if (name == null || name.isBlank()) {
-                name = email.split("@")[0];
-            }
+            String name = (request.getName() != null && !request.getName().isBlank())
+                    ? request.getName()
+                    : verifiedUser.name();
             newUser.setName(name);
             newUser.setPassword(passwordEncoder.encode(java.util.UUID.randomUUID().toString()));
             newUser.setRole("USER");
             return userRepository.save(newUser);
         });
-
-        if (user.isOwnerOrSuperAdmin() && !"OWNER".equalsIgnoreCase(user.getRole()) && !"SUPER_ADMIN".equalsIgnoreCase(user.getRole())) {
-            user.setRole("OWNER");
-            user = userRepository.save(user);
-        }
 
         String token = jwtUtil.generateToken(user.getEmail(), user.getId(), user.getRole());
         return new AuthResponse(token, user.getId(), user.getName(), user.getEmail(), user.getRole());

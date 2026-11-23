@@ -2,13 +2,22 @@ package com.hotelreservation.config;
 
 import com.hotelreservation.model.User;
 import com.hotelreservation.repository.UserRepository;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration
+@Slf4j
 public class AdminSeeder {
+
+        @Value("${admin.email:}")
+        private String initialAdminEmail;
+
+        @Value("${admin.password:}")
+        private String initialAdminPassword;
 
         @Bean
         public CommandLineRunner seedData(
@@ -17,27 +26,22 @@ public class AdminSeeder {
                         com.hotelreservation.repository.RoomRepository roomRepository,
                         PasswordEncoder passwordEncoder) {
                 return args -> {
-                        String adminEmail = "admin@gmail.com";
-                        String defaultPassword = "admin123";
+                        // 1. Seed Owner only if explicitly provided in environment variables
+                        if (initialAdminEmail != null && !initialAdminEmail.isBlank() &&
+                            initialAdminPassword != null && !initialAdminPassword.isBlank()) {
+                                if (!userRepository.existsByEmail(initialAdminEmail.trim())) {
+                                        User admin = new User();
+                                        admin.setName("StayEase Owner");
+                                        admin.setEmail(initialAdminEmail.trim());
+                                        admin.setPassword(passwordEncoder.encode(initialAdminPassword));
+                                        admin.setPhone("1234567890");
+                                        admin.setRole("OWNER");
 
-                        // 1. Seed Admin
-                        if (!userRepository.existsByEmail(adminEmail)) {
-                                User admin = new User();
-                                admin.setName("StayEase Owner");
-                                admin.setEmail(adminEmail);
-                                admin.setPassword(passwordEncoder.encode(defaultPassword));
-                                admin.setPhone("1234567890");
-                                admin.setRole("OWNER");
-
-                                userRepository.save(admin);
-                                System.out.println("Default admin created: " + adminEmail + " / " + defaultPassword);
+                                        userRepository.save(admin);
+                                        log.info("Initialized system owner account for: {}", initialAdminEmail);
+                                }
                         } else {
-                                userRepository.findByEmail(adminEmail).ifPresent(owner -> {
-                                        if (!owner.isOwnerOrSuperAdmin()) {
-                                                owner.setRole("OWNER");
-                                                userRepository.save(owner);
-                                        }
-                                });
+                                log.info("No initial admin seeded from properties. Set ADMIN_EMAIL and ADMIN_PASSWORD if seeding is desired.");
                         }
 
                         // 2. Seed Initial Internal Hotels if empty

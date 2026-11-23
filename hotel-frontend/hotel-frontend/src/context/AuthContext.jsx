@@ -21,7 +21,7 @@ export function AuthProvider({ children }) {
     setUser(null)
   }
 
-  const isOwner = user?.role === 'OWNER' || user?.role === 'Owner' || user?.role === 'SUPER_ADMIN' || user?.email === 'admin@gmail.com'
+  const isOwner = user?.role === 'OWNER' || user?.role === 'Owner' || user?.role === 'SUPER_ADMIN'
   const isAdmin = user?.role === 'ADMIN' || isOwner
 
   return (

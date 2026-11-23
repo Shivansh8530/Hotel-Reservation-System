@@ -11,8 +11,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @RequiredArgsConstructor
@@ -20,36 +22,53 @@ public class BookingService {
 
     private final BookingRepository bookingRepository;
     private final RoomRepository roomRepository;
+    private final ConcurrentHashMap<String, Object> roomLocks = new ConcurrentHashMap<>();
 
     public Booking createBooking(String userId, BookingRequest request) {
+        if (request.getCheckIn().isBefore(LocalDate.now())) {
+            throw new ApiException("Check-in date cannot be in the past", HttpStatus.BAD_REQUEST);
+        }
+
         if (!request.getCheckOut().isAfter(request.getCheckIn())) {
             throw new ApiException("Check-out date must be after check-in date", HttpStatus.BAD_REQUEST);
+        }
+
+        long nights = ChronoUnit.DAYS.between(request.getCheckIn(), request.getCheckOut());
+        if (nights > 30) {
+            throw new ApiException("Maximum reservation duration is 30 nights", HttpStatus.BAD_REQUEST);
         }
 
         Room room = roomRepository.findById(request.getRoomId())
                 .orElseThrow(() -> new ApiException("Room not found", HttpStatus.NOT_FOUND));
 
-        boolean overlaps = bookingRepository.findByRoomId(room.getId()).stream()
-                .filter(b -> "CONFIRMED".equals(b.getStatus()))
-                .anyMatch(b -> request.getCheckIn().isBefore(b.getCheckOut())
-                        && request.getCheckOut().isAfter(b.getCheckIn()));
-
-        if (overlaps) {
-            throw new ApiException("Room is already booked for these dates", HttpStatus.CONFLICT);
+        if (!room.isAvailable()) {
+            throw new ApiException("This sanctuary room is currently unavailable for booking", HttpStatus.BAD_REQUEST);
         }
 
-        long nights = ChronoUnit.DAYS.between(request.getCheckIn(), request.getCheckOut());
-        double totalPrice = nights * room.getPricePerNight();
+        // Synchronize room-level lock to prevent double-booking race condition
+        Object lock = roomLocks.computeIfAbsent(room.getId(), k -> new Object());
+        synchronized (lock) {
+            boolean overlaps = bookingRepository.findByRoomId(room.getId()).stream()
+                    .filter(b -> "CONFIRMED".equalsIgnoreCase(b.getStatus()))
+                    .anyMatch(b -> request.getCheckIn().isBefore(b.getCheckOut())
+                            && request.getCheckOut().isAfter(b.getCheckIn()));
 
-        Booking booking = new Booking();
-        booking.setUserId(userId);
-        booking.setRoomId(room.getId());
-        booking.setCheckIn(request.getCheckIn());
-        booking.setCheckOut(request.getCheckOut());
-        booking.setTotalPrice(totalPrice);
-        booking.setStatus("CONFIRMED");
+            if (overlaps) {
+                throw new ApiException("Room is already booked for these dates. Please choose different dates.", HttpStatus.CONFLICT);
+            }
 
-        return bookingRepository.save(booking);
+            double totalPrice = nights * room.getPricePerNight();
+
+            Booking booking = new Booking();
+            booking.setUserId(userId);
+            booking.setRoomId(room.getId());
+            booking.setCheckIn(request.getCheckIn());
+            booking.setCheckOut(request.getCheckOut());
+            booking.setTotalPrice(totalPrice);
+            booking.setStatus("CONFIRMED");
+
+            return bookingRepository.save(booking);
+        }
     }
 
     public List<Booking> getBookingsForUser(String userId) {
@@ -68,13 +87,30 @@ public class BookingService {
             throw new ApiException("You can only cancel your own bookings", HttpStatus.FORBIDDEN);
         }
 
+        if ("CANCELLED".equalsIgnoreCase(booking.getStatus())) {
+            throw new ApiException("This reservation is already cancelled", HttpStatus.BAD_REQUEST);
+        }
+
+        if (!isAdmin && booking.getCheckIn().isBefore(LocalDate.now())) {
+            throw new ApiException("Cannot cancel a reservation that has already started or passed", HttpStatus.BAD_REQUEST);
+        }
+
         booking.setStatus("CANCELLED");
         return bookingRepository.save(booking);
     }
 
     public Booking rescheduleBooking(String bookingId, String userId, boolean isAdmin, RescheduleBookingRequest request) {
+        if (request.getCheckIn().isBefore(LocalDate.now())) {
+            throw new ApiException("Check-in date cannot be in the past", HttpStatus.BAD_REQUEST);
+        }
+
         if (!request.getCheckOut().isAfter(request.getCheckIn())) {
             throw new ApiException("Check-out date must be after check-in date", HttpStatus.BAD_REQUEST);
+        }
+
+        long nights = ChronoUnit.DAYS.between(request.getCheckIn(), request.getCheckOut());
+        if (nights > 30) {
+            throw new ApiException("Maximum reservation duration is 30 nights", HttpStatus.BAD_REQUEST);
         }
 
         Booking booking = bookingRepository.findById(bookingId)
@@ -91,24 +127,29 @@ public class BookingService {
         Room room = roomRepository.findById(booking.getRoomId())
                 .orElseThrow(() -> new ApiException("Associated room not found", HttpStatus.NOT_FOUND));
 
-        // Check if other confirmed bookings overlap for this room, excluding this booking itself
-        boolean overlaps = bookingRepository.findByRoomId(room.getId()).stream()
-                .filter(b -> !b.getId().equals(booking.getId()))
-                .filter(b -> "CONFIRMED".equalsIgnoreCase(b.getStatus()))
-                .anyMatch(b -> request.getCheckIn().isBefore(b.getCheckOut())
-                        && request.getCheckOut().isAfter(b.getCheckIn()));
-
-        if (overlaps) {
-            throw new ApiException("The room is not available for the requested new dates. Please choose different dates.", HttpStatus.CONFLICT);
+        if (!room.isAvailable()) {
+            throw new ApiException("This sanctuary room is currently marked unavailable", HttpStatus.BAD_REQUEST);
         }
 
-        long nights = ChronoUnit.DAYS.between(request.getCheckIn(), request.getCheckOut());
-        double newTotalPrice = nights * room.getPricePerNight();
+        Object lock = roomLocks.computeIfAbsent(room.getId(), k -> new Object());
+        synchronized (lock) {
+            boolean overlaps = bookingRepository.findByRoomId(room.getId()).stream()
+                    .filter(b -> !b.getId().equals(booking.getId()))
+                    .filter(b -> "CONFIRMED".equalsIgnoreCase(b.getStatus()))
+                    .anyMatch(b -> request.getCheckIn().isBefore(b.getCheckOut())
+                            && request.getCheckOut().isAfter(b.getCheckIn()));
 
-        booking.setCheckIn(request.getCheckIn());
-        booking.setCheckOut(request.getCheckOut());
-        booking.setTotalPrice(newTotalPrice);
+            if (overlaps) {
+                throw new ApiException("The room is not available for the requested new dates. Please choose different dates.", HttpStatus.CONFLICT);
+            }
 
-        return bookingRepository.save(booking);
+            double newTotalPrice = nights * room.getPricePerNight();
+
+            booking.setCheckIn(request.getCheckIn());
+            booking.setCheckOut(request.getCheckOut());
+            booking.setTotalPrice(newTotalPrice);
+
+            return bookingRepository.save(booking);
+        }
     }
 }
