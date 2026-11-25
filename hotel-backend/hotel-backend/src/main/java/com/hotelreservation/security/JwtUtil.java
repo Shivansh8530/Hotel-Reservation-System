@@ -3,15 +3,23 @@ package com.hotelreservation.security;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.Set;
 import java.util.function.Function;
 
 @Component
 public class JwtUtil {
+
+    private static final Set<String> FORBIDDEN_SECRETS = Set.of(
+            "ChangeThisSecretKeyBeforeDeployingToProductionPlease123",
+            "YourSecureSecretKeyAtLeast32CharactersLong123456"
+    );
 
     @Value("${jwt.secret}")
     private String secret;
@@ -19,8 +27,18 @@ public class JwtUtil {
     @Value("${jwt.expiration.ms}")
     private long expirationMs;
 
+    @PostConstruct
+    public void validateSecret() {
+        if (secret == null || secret.isBlank() || secret.length() < 32) {
+            throw new IllegalStateException("JWT_SECRET environment variable must be set and at least 32 characters long.");
+        }
+        if (FORBIDDEN_SECRETS.contains(secret)) {
+            throw new IllegalStateException("JWT_SECRET cannot use a known public/default placeholder value. Rotate JWT_SECRET immediately.");
+        }
+    }
+
     private SecretKey getSigningKey() {
-        return Keys.hmacShaKeyFor(secret.getBytes());
+        return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
     public String generateToken(String email, String userId, String role) {
