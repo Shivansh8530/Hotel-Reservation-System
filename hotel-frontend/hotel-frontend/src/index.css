@@ -1,6 +1,6 @@
 :root {
-  --font-headline: 'Playfair Display', Georgia, serif;
-  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-headline: 'Montserrat', system-ui, -apple-system, sans-serif;
+  --font-body: 'Montserrat', system-ui, -apple-system, sans-serif;
 
   /* Standardized Type Scale (Consistent Hierarchy) */
   --fs-xs: 0.75rem;    /* 12px - Badges, pill tags, micro-labels */
