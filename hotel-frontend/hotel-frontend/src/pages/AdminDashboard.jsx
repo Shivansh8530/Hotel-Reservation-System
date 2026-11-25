@@ -528,7 +528,7 @@ export default function AdminDashboard() {
                     <td>★ {h.rating}</td>
                     <td>
                       {h.source === 'INTERNAL' && (
-                        <button onClick={() => handleDeleteHotel(h.id)} className="btn btn-danger btn-pill" style={{ padding: '0.3rem 0.75rem', fontSize: '0.78rem' }}>
+                        <button onClick={() => handleDeleteHotel(h.id)} className="btn btn-danger btn-pill btn-sm">
                           Delete
                         </button>
                       )}
@@ -711,10 +711,10 @@ export default function AdminDashboard() {
                       </td>
                       <td>
                         <div style={{ display: 'flex', gap: '0.5rem' }}>
-                          <button onClick={() => handleEdit(r)} className="btn btn-secondary btn-pill" style={{ padding: '0.25rem 0.65rem', fontSize: '0.78rem' }}>
+                          <button onClick={() => handleEdit(r)} className="btn btn-secondary btn-pill btn-sm">
                             Edit
                           </button>
-                          <button onClick={() => handleDelete(r.id)} className="btn btn-danger btn-pill" style={{ padding: '0.25rem 0.65rem', fontSize: '0.78rem' }}>
+                          <button onClick={() => handleDelete(r.id)} className="btn btn-danger btn-pill btn-sm">
                             Delete
                           </button>
                         </div>
@@ -747,23 +747,22 @@ export default function AdminDashboard() {
             <tbody>
               {bookings.map((b) => (
                 <tr key={b.id}>
-                  <td><code>{b.id}</code></td>
-                  <td>{b.userId}</td>
-                  <td>{b.roomId}</td>
-                  <td>{b.checkIn}</td>
-                  <td>{b.checkOut}</td>
-                  <td style={{ color: 'var(--primary)', fontWeight: '600' }}>{formatINR(b.totalPrice)}</td>
-                  <td>
+                  <td><code style={{ fontSize: '0.78rem' }}>{b.id}</code></td>
+                  <td style={{ fontSize: '0.78rem', fontFamily: 'monospace' }}>{b.userId}</td>
+                  <td style={{ fontSize: '0.78rem', fontFamily: 'monospace' }}>{b.roomId}</td>
+                  <td style={{ whiteSpace: 'nowrap' }}>{b.checkIn}</td>
+                  <td style={{ whiteSpace: 'nowrap' }}>{b.checkOut}</td>
+                  <td style={{ color: 'var(--primary)', fontWeight: '600', whiteSpace: 'nowrap' }}>{formatINR(b.totalPrice)}</td>
+                  <td style={{ whiteSpace: 'nowrap' }}>
                     <span className={`status-pill ${b.status === 'CANCELLED' ? 'status-cancelled' : 'status-confirmed'}`}>
                       {b.status}
                     </span>
                   </td>
-                  <td>
+                  <td style={{ whiteSpace: 'nowrap' }}>
                     {b.status === 'CONFIRMED' && (
                       <button
                         onClick={() => handleOpenReschedule(b)}
-                        className="btn btn-secondary btn-pill"
-                        style={{ padding: '0.25rem 0.65rem', fontSize: '0.78rem' }}
+                        className="btn btn-secondary btn-pill btn-sm"
                       >
                         Reschedule
                       </button>
@@ -922,8 +921,7 @@ export default function AdminDashboard() {
                       ) : isOwner ? (
                         <button
                           onClick={() => handleRoleToggle(u.id, u.role)}
-                          className={`btn btn-pill ${u.role === 'ADMIN' ? 'btn-secondary' : 'btn-outline'}`}
-                          style={{ padding: '0.25rem 0.75rem', fontSize: '0.78rem' }}
+                          className={`btn btn-pill btn-sm ${u.role === 'ADMIN' ? 'btn-secondary' : 'btn-outline'}`}
                         >
                           {u.role === 'ADMIN' ? 'Demote to User' : 'Promote to Admin'}
                         </button>
@@ -963,9 +961,8 @@ export default function AdminDashboard() {
             </div>
             <button
               onClick={loadLogs}
-              className="btn btn-secondary btn-pill"
+              className="btn btn-secondary btn-pill btn-sm"
               disabled={logsLoading}
-              style={{ fontSize: '0.82rem', padding: '0.45rem 1rem' }}
             >
               {logsLoading ? 'Refreshing...' : '🔄 Refresh Logs'}
             </button>
@@ -976,17 +973,15 @@ export default function AdminDashboard() {
             <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
               <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--on-surface-variant)', textTransform: 'uppercase', marginRight: '0.25rem' }}>View:</span>
               <button
-                className={`btn btn-pill ${logFilter === 'other' ? 'btn-primary' : 'btn-secondary'}`}
+                className={`btn btn-pill btn-sm ${logFilter === 'other' ? 'btn-primary' : 'btn-secondary'}`}
                 onClick={() => setLogFilter('other')}
-                style={{ padding: '0.35rem 0.9rem', fontSize: '0.82rem' }}
                 id="btn-filter-other-admins"
               >
                 👥 Other Admins' Actions
               </button>
               <button
-                className={`btn btn-pill ${logFilter === 'all' ? 'btn-primary' : 'btn-secondary'}`}
+                className={`btn btn-pill btn-sm ${logFilter === 'all' ? 'btn-primary' : 'btn-secondary'}`}
                 onClick={() => setLogFilter('all')}
-                style={{ padding: '0.35rem 0.9rem', fontSize: '0.82rem' }}
                 id="btn-filter-all-logs"
               >
                 📋 All Admin Activity

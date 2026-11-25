@@ -97,10 +97,8 @@ export default function Navbar() {
           <button
             type="button"
             onClick={toggleTheme}
-            className="btn btn-secondary btn-pill nav-theme-toggle"
+            className="btn btn-secondary btn-pill btn-sm nav-theme-toggle"
             style={{
-              padding: '0.4rem 0.85rem',
-              fontSize: '0.85rem',
               display: 'flex',
               alignItems: 'center',
               gap: '0.4rem'
@@ -124,8 +122,7 @@ export default function Navbar() {
               </div>
               <button
                 onClick={handleLogout}
-                className="btn btn-outline btn-pill nav-signout-btn"
-                style={{ padding: '0.45rem 1rem', fontSize: '0.85rem' }}
+                className="btn btn-outline btn-pill btn-sm nav-signout-btn"
               >
                 Sign Out
               </button>

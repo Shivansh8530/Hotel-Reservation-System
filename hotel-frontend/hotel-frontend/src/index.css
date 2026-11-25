@@ -584,6 +584,11 @@ a {
   border-radius: var(--radius-pill);
 }
 
+.btn-sm {
+  padding: 0.35rem 0.85rem;
+  font-size: 0.82rem;
+}
+
 /* Layout Cards & Grids */
 .rooms-grid {
   display: grid;
@@ -906,7 +911,9 @@ a {
   background: var(--surface-container-lowest);
   border: 1px solid var(--outline-variant);
   border-radius: var(--radius-lg);
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
   box-shadow: var(--shadow-soft);
 }
 
@@ -919,18 +926,19 @@ a {
 .custom-table th {
   background: var(--surface-container-low);
   color: var(--on-surface-variant);
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  padding: 1rem 1.25rem;
+  padding: 0.9rem 1rem;
   border-bottom: 1px solid var(--outline-variant);
+  white-space: nowrap;
 }
 
 .custom-table td {
-  padding: 1.1rem 1.25rem;
+  padding: 0.95rem 1rem;
   border-bottom: 1px solid var(--surface-container-high);
-  font-size: 0.92rem;
+  font-size: 0.88rem;
 }
 
 .custom-table tr:last-child td {
