@@ -52,6 +52,38 @@ export default function AdminDashboard() {
   const [logsLoading, setLogsLoading] = useState(false)
   const [logFilter, setLogFilter] = useState('other') // 'other' | 'all'
   const [logSearch, setLogSearch] = useState('')
+  const seenLogsStorageKey = `stayease_seen_admin_logs_${currentUser?.email?.toLowerCase() || 'owner'}`
+  const [seenLogIds, setSeenLogIds] = useState(() => {
+    try {
+      const saved = localStorage.getItem(`stayease_seen_admin_logs_${currentUser?.email?.toLowerCase() || 'owner'}`)
+      return saved ? JSON.parse(saved) : []
+    } catch {
+      return []
+    }
+  })
+
+  const getLogKey = (log) => log?.id || `${log?.timestamp || ''}_${log?.action || ''}_${log?.adminEmail || ''}`
+
+  const markLogsAsSeen = (logList) => {
+    if (!logList || logList.length === 0) return
+    setSeenLogIds((prev) => {
+      const merged = Array.from(new Set([...prev, ...logList.map(getLogKey)]))
+      try {
+        localStorage.setItem(seenLogsStorageKey, JSON.stringify(merged))
+      } catch {
+        // ignore storage quota errors
+      }
+      return merged
+    })
+  }
+
+  useEffect(() => {
+    if (tab === 'logs' && logs.length > 0) {
+      markLogsAsSeen(logs)
+    }
+  }, [tab, logs])
+
+  const unreadLogsCount = logs.filter((l) => !seenLogIds.includes(getLogKey(l))).length
   
   const [showAdminForm, setShowAdminForm] = useState(false)
   const [adminForm, setAdminForm] = useState({ name: '', email: '', password: '', phone: '' })
@@ -321,15 +353,16 @@ export default function AdminDashboard() {
           className={`btn btn-pill ${tab === 'logs' ? 'btn-primary' : 'btn-secondary'}`}
           onClick={() => {
             setTab('logs')
+            markLogsAsSeen(logs)
             loadLogs()
           }}
           style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
           id="btn-quick-admin-logs"
         >
           <span>📜 View Admin Logs</span>
-          {logs.length > 0 && (
+          {unreadLogsCount > 0 && (
             <span style={{ background: tab === 'logs' ? 'rgba(255,255,255,0.25)' : 'var(--primary)', color: '#fff', padding: '0.15rem 0.5rem', borderRadius: 'var(--radius-pill)', fontSize: '0.75rem', fontWeight: 700 }}>
-              {logs.length}
+              {unreadLogsCount}
             </span>
           )}
         </button>
@@ -395,6 +428,7 @@ export default function AdminDashboard() {
           className={`btn btn-pill ${tab === 'logs' ? 'btn-primary' : 'btn-secondary'}`}
           onClick={() => {
             setTab('logs')
+            markLogsAsSeen(logs)
             loadLogs()
           }}
           id="tab-btn-admin-logs"

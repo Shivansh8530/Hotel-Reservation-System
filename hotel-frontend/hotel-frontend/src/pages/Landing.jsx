@@ -78,12 +78,6 @@ export default function Landing() {
   const navigate = useNavigate()
   const [featuredHotels, setFeaturedHotels] = useState([])
   const [loadingFeatured, setLoadingFeatured] = useState(true)
-  const [search, setSearch] = useState({
-    destination: '',
-    checkIn: '',
-    checkOut: '',
-    guests: 2
-  })
 
   useEffect(() => {
     let active = true
@@ -102,17 +96,6 @@ export default function Landing() {
     return () => { active = false }
   }, [])
 
-  const handleQuickSearch = (e) => {
-    e.preventDefault()
-    const params = new URLSearchParams()
-    if (search.destination.trim()) params.set('destination', search.destination.trim())
-    if (search.checkIn) params.set('checkIn', search.checkIn)
-    if (search.checkOut) params.set('checkOut', search.checkOut)
-    if (search.guests) params.set('guests', String(search.guests))
-    const qs = params.toString()
-    navigate(qs ? `/hotels?${qs}` : '/hotels')
-  }
-
   const handleCollectionClick = (col) => {
     const params = new URLSearchParams()
     if (col.destination) params.set('destination', col.destination)
@@ -126,76 +109,22 @@ export default function Landing() {
       <section className="landing-hero">
         <div className="container">
           <div className="landing-hero-inner">
-            <span className="hero-eyebrow">StayEase Hospitality Sanctuary</span>
+            <span className="hero-eyebrow">Begin Your Journey</span>
             <h1 className="landing-hero-title">
-              Where Quiet Luxury Meets Effortless Stays
+              Ready for Your Next Sanctuary?
             </h1>
             <p className="landing-hero-subtitle">
-              Curated coastal villas, royal heritage havelis, and architectural sanctuaries across India—unified with real-time availability and bespoke concierge care.
+              Create a StayEase account to unlock instant reservations, real-time date rescheduling, and member-exclusive suites.
             </p>
 
             <div className="landing-hero-actions">
               <Link to="/hotels" className="btn btn-primary btn-pill landing-cta-btn">
-                Explore Sanctuaries
+                Start Exploring
               </Link>
-              <Link to="/rooms" className="btn btn-pill landing-cta-secondary">
-                Browse Suites & Rooms
+              <Link to="/signup" className="btn btn-pill landing-cta-secondary">
+                Create Free Account
               </Link>
             </div>
-          </div>
-
-          {/* Floating Quick Search Bar */}
-          <div className="search-widget landing-search-widget">
-            <form onSubmit={handleQuickSearch} className="landing-search-form" role="search" aria-label="Quick sanctuary search">
-              <div className="form-group">
-                <label htmlFor="landing-destination">Destination</label>
-                <input
-                  id="landing-destination"
-                  type="text"
-                  className="form-control"
-                  placeholder="Goa, Jaipur, Mumbai..."
-                  value={search.destination}
-                  onChange={(e) => setSearch({ ...search, destination: e.target.value })}
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="landing-checkin">Check-In</label>
-                <input
-                  id="landing-checkin"
-                  type="date"
-                  className="form-control"
-                  value={search.checkIn}
-                  onChange={(e) => setSearch({ ...search, checkIn: e.target.value })}
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="landing-checkout">Check-Out</label>
-                <input
-                  id="landing-checkout"
-                  type="date"
-                  className="form-control"
-                  value={search.checkOut}
-                  onChange={(e) => setSearch({ ...search, checkOut: e.target.value })}
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="landing-guests">Guests</label>
-                <select
-                  id="landing-guests"
-                  className="form-control"
-                  value={search.guests}
-                  onChange={(e) => setSearch({ ...search, guests: Number(e.target.value) })}
-                >
-                  <option value={1}>1 Guest</option>
-                  <option value={2}>2 Guests</option>
-                  <option value={3}>3 Guests</option>
-                  <option value={4}>4+ Guests</option>
-                </select>
-              </div>
-              <button type="submit" className="btn btn-primary btn-pill landing-search-submit">
-                Search Stays
-              </button>
-            </form>
           </div>
         </div>
       </section>
@@ -224,8 +153,37 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* Featured Sanctuaries (Live from Backend when available) */}
+      {(loadingFeatured || featuredHotels.length > 0) && (
+        <section className="landing-section">
+          <div className="container">
+            <div className="landing-section-header">
+              <div>
+                <span className="landing-eyebrow">Signature Selection</span>
+                <h2>Featured Sanctuaries</h2>
+              </div>
+              <Link to="/hotels" className="landing-text-link">
+                Explore Full Directory →
+              </Link>
+            </div>
+
+            {loadingFeatured ? (
+              <div className="landing-featured-loading">
+                Curating signature properties...
+              </div>
+            ) : (
+              <div className="rooms-grid">
+                {featuredHotels.map((hotel) => (
+                  <HotelCard key={hotel.id} hotel={hotel} />
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
       {/* Curated Collections */}
-      <section className="landing-section">
+      <section className="landing-section landing-section-alt">
         <div className="container">
           <div className="landing-section-header">
             <div>
@@ -256,35 +214,6 @@ export default function Landing() {
           </div>
         </div>
       </section>
-
-      {/* Featured Sanctuaries (Live from Backend when available) */}
-      {(loadingFeatured || featuredHotels.length > 0) && (
-        <section className="landing-section landing-section-alt">
-          <div className="container">
-            <div className="landing-section-header">
-              <div>
-                <span className="landing-eyebrow">Signature Selection</span>
-                <h2>Featured Sanctuaries</h2>
-              </div>
-              <Link to="/hotels" className="landing-text-link">
-                Explore Full Directory →
-              </Link>
-            </div>
-
-            {loadingFeatured ? (
-              <div className="landing-featured-loading">
-                Curating signature properties...
-              </div>
-            ) : (
-              <div className="hotel-grid">
-                {featuredHotels.map((hotel) => (
-                  <HotelCard key={hotel.id} hotel={hotel} />
-                ))}
-              </div>
-            )}
-          </div>
-        </section>
-      )}
 
       {/* Why StayEase Pillars */}
       <section className="landing-section">
@@ -328,29 +257,6 @@ export default function Landing() {
                 </footer>
               </blockquote>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Final Editorial CTA Banner */}
-      <section className="landing-section">
-        <div className="container">
-          <div className="landing-cta-banner">
-            <div className="landing-cta-banner-content">
-              <span className="hero-eyebrow">Begin Your Journey</span>
-              <h2>Ready for Your Next Sanctuary?</h2>
-              <p>
-                Create a StayEase account to unlock instant reservations, real-time date rescheduling, and member-exclusive suites.
-              </p>
-              <div className="landing-hero-actions">
-                <Link to="/hotels" className="btn btn-primary btn-pill landing-cta-btn">
-                  Start Exploring
-                </Link>
-                <Link to="/signup" className="btn btn-pill landing-cta-secondary">
-                  Create Free Account
-                </Link>
-              </div>
-            </div>
           </div>
         </div>
       </section>

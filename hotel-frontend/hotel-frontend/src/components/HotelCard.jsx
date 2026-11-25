@@ -15,7 +15,7 @@ export default function HotelCard({ hotel }) {
         <img src={imageUrl} alt={hotel.name} />
         
         {/* Top Badges */}
-        <div style={{ position: 'absolute', top: '1rem', left: '1rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+        <div className="hotel-badges-row" style={{ position: 'absolute', top: '1rem', left: '1rem', right: '1rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
           <span className="room-type-badge">
             {hotel.propertyType || 'Hotel'}
           </span>
