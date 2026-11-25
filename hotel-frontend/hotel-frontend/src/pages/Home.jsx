@@ -1,37 +1,56 @@
 import { useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { searchHotels, getHotels } from '../services/api.js'
 import HotelCard from '../components/HotelCard.jsx'
 
 export default function Home() {
+  const [urlParams] = useSearchParams()
   const [hotels, setHotels] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
-  // Search filter states
+  // Search filter states initialized from URL query params (when arriving from Landing page)
   const [searchParams, setSearchParams] = useState({
-    destination: '',
-    checkIn: '',
-    checkOut: '',
-    guests: 2,
-    rooms: 1
+    destination: urlParams.get('destination') || '',
+    checkIn: urlParams.get('checkIn') || '',
+    checkOut: urlParams.get('checkOut') || '',
+    guests: Number(urlParams.get('guests')) || 2,
+    rooms: Number(urlParams.get('rooms')) || 1
   })
 
   const [selectedSource, setSelectedSource] = useState('ALL')
-  const [selectedType, setSelectedType] = useState('ALL')
+  const [selectedType, setSelectedType] = useState(urlParams.get('propertyType') || 'ALL')
   const [selectedSort, setSelectedSort] = useState('default')
 
-  // Load featured/all hotels on initial mount
+  // Load featured/all hotels on initial mount (or run search if URL params exist)
   const loadInitialHotels = async () => {
     setLoading(true)
     setError('')
+    const hasInitialFilters =
+      urlParams.get('destination') ||
+      urlParams.get('checkIn') ||
+      urlParams.get('checkOut') ||
+      urlParams.get('propertyType')
+
     try {
-      // First try featured hotels, fallback to search with empty criteria
-      const res = await getHotels(true)
-      if (res.data && res.data.length > 0) {
-        setHotels(res.data)
-      } else {
-        const searchRes = await searchHotels({})
+      if (hasInitialFilters) {
+        const query = {}
+        if (urlParams.get('destination')) query.destination = urlParams.get('destination')
+        if (urlParams.get('checkIn')) query.checkIn = urlParams.get('checkIn')
+        if (urlParams.get('checkOut')) query.checkOut = urlParams.get('checkOut')
+        if (urlParams.get('guests')) query.guests = Number(urlParams.get('guests'))
+        if (urlParams.get('propertyType')) query.propertyType = urlParams.get('propertyType')
+        const searchRes = await searchHotels(query)
         setHotels(searchRes.data || [])
+      } else {
+        // First try featured hotels, fallback to search with empty criteria
+        const res = await getHotels(true)
+        if (res.data && res.data.length > 0) {
+          setHotels(res.data)
+        } else {
+          const searchRes = await searchHotels({})
+          setHotels(searchRes.data || [])
+        }
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Unable to load hotels. Please check your network connection and ensure the backend server is reachable.')

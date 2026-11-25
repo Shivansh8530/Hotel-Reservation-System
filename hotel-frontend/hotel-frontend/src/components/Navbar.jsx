@@ -57,8 +57,8 @@ export default function Navbar() {
           aria-label="Main Navigation"
         >
           <Link
-            to="/"
-            className={`nav-link ${isActive('/') ? 'active' : ''}`}
+            to="/hotels"
+            className={`nav-link ${isActive('/hotels') ? 'active' : ''}`}
             onClick={handleLinkClick}
           >
             Explore Hotels

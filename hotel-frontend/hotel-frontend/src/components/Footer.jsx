@@ -15,6 +15,7 @@ export default function Footer() {
           <div>
             <h4 style={{ color: 'var(--on-surface)', fontSize: '1rem', marginBottom: '1rem' }}>Navigation</h4>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', fontSize: '0.9rem' }}>
+              <Link to="/hotels" className="footer-link" style={{ color: 'inherit' }}>Explore Hotels</Link>
               <Link to="/rooms" className="footer-link" style={{ color: 'inherit' }}>Explore Rooms</Link>
               <Link to="/my-bookings" className="footer-link" style={{ color: 'inherit' }}>My Reservations</Link>
               <Link to="/login" className="footer-link" style={{ color: 'inherit' }}>Guest Portal</Link>
